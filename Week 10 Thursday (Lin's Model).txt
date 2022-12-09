@@ -1,0 +1,6 @@
+mysql> create database oil_o_rama;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> use oil_o_rama;
+Database changed
+

@@ -1,0 +1,25 @@
+1) Why is isolation important to DBMSs?
+ 
+2) For what purpose can you use the concurrency relationships you have observed in the videos?
+
+3) Show how to test for concurrency and ACID using the orders table in the sales_db 
+(this is just like what you saw in the instructor video).
+
+4) SHOW OFF YOUR WORK! Use Flipgrid's screen recorder to demonstrate your concurrency test, 
+and record your answers to the questions above. Post your video into this forum and be sure 
+to claim your credit here
+
+
+
+1) Isolation is important because without it a lot of changes being made to rows of information could be updated incorrectly.
+Isolation allows there to be multiple transactions being made to one row of information, but it only allows this and performs
+it correctly with locking. Without locking then like I said earlier, if two people are trying to make a change to one 
+row of data at the same time then there is a big chance that row of data will not be updated incorreclty. Whereas, if there
+is locking in place (isolation) then each update on the same row of data will happen one at a time and wait for the first
+transaction to complete before the next transaction starts.
+
+2) The purpose for using the concurrency relationships we saw in the videos is to help better explain the fundametnals of ACID
+and better show how ACID is applied. Moreover, using the concurrecny relationships can really help to present to people why isolation
+/locking is important and how data can be easily stored incorrectly if not processed correctly.
+
+3)   

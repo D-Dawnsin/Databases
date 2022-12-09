@@ -1,0 +1,5 @@
+4. CREATE (Hoffman)-[:WORKS_WITH]->(Peel)
+
+5. CREATE (Hoffman)-[:ORDERED {odate: [2000-10-03]} ]->(3003)
+
+6. CREATE (Peel)-[:ASSISTED_WITH {odate: [2000-10-03]} ]->(3003)

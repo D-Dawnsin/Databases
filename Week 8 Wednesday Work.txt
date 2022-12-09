@@ -1,0 +1,33 @@
+Wednesday Work-
+
+ Imagine that your company is trying to find the best cloud-based relational database product that would connect to its 
+local MySQL installation. Research an alternative RELATIONAL database product, preferably cloud-based, 
+and describe in one paragraph which API this RDBMS uses to connect to other RDBMS products. 
+How would it connect with MySQL? Include in your post the URLs to the information (including any YouTube videos) 
+that you found.
+
+
+https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ConnectToInstance.html
+https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/Welcome.html
+https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_Operations.html
+https://aws.amazon.com/dms/
+https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ConnectToMicrosoftSQLServerInstance.html
+
+
+One of the best cloud-based relation based database systems out there for people to use right now is Amazon Relational Database Services. 
+This service can connect to a multitude of database engines ranging from Aurora to Oracle and even MySQL. Amazon 
+Relational Databases can use tons of differenet API calls. These calls range from "AddRoleToDBCluster" all the way to
+"StopDBInstance". Some of these special API calls are what can help to make a connection from ARD(Amazon Relational Database)
+to another RDB. For example when attempting to connect ARD to MySQL you have to have a connection string that contains
+the DNS address from the DB instance endpoint as the host parameter, and the port number. One of the easiest ways
+to receive this is through making the RDS API call "DescribeDBInstances" in order to recieve this information to connect
+a DB instance running on the MySQL database engine. Moreover, you can also connect your MySQL databse instance to ARD through
+a command prompt call. To do this, it is as simple as typing one long command into your Command Prompt and substituting in the correct
+parameters. The code looks something like this "mysql -h mysql–instance1.123456789012.us-east-1.rds.amazonaws.com -P 
+3306 -u mymasteruser -p". Moreover, there are some other interesting ways you can also connect ARD to other RDBMS. One way is to download
+Microsoft SQL Server Managment Studio and use this as a driver to connect both MySQL and ARD which you would be using a ODBC Driver.
+Another way is by connecting your MySQL database to ARD through your MySQL workbench in which one would use a JDBC driver 
+to help connect the MySQL DB to ARB. It is cool to note here that there are two different ways to connect between a RDBMS
+and ARB through two different drivers. All in all, the API that ARD uses to connect to other RDBMS products can be different
+depending on how someone decides to connect their RDMS to ARD. However, there are still set API calls that only people using
+ARD can utilize.    

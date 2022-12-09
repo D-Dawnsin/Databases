@@ -1,0 +1,38 @@
+1)
+
+mysql> select cname, rating from customers
+    -> where cnum in
+    -> (select cnum from orders where odate > '2000-10-03') and
+    -> rating > (select rating from customers where cname = "Cisneros");
+Empty set (0.00 sec)
+
+mysql> select customers.cname,customers.rating, orders.odate from customers
+    -> left join orders
+    -> on customers.cnum = orders.cnum
+    -> where orders.odate = '2000-10-03' and
+    -> customers.rating > (select max(customers.rating) from customers);
+Empty set (0.00 sec)
+
+2)
+
+mysql> select avg(rating) as "Average Rating" from customers
+    -> where cnum in
+    -> (select cnum from orders where amot > 1000.0);
++----------------+
+| Average Rating |
++----------------+
+|       220.0000 |
++----------------+
+1 row in set (0.01 sec)
+
+mysql> select avg(customers.rating) as "Average Rating" from customers
+    -> left join orders
+    -> on customers.cnum = orders.cnum
+    -> where orders.amot > 1000.0;
++----------------+
+| Average Rating |
++----------------+
+|       220.0000 |
++----------------+
+1 row in set (0.00 sec)
+

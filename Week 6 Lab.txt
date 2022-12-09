@@ -1,0 +1,382 @@
+1) Add an “EMAIL ADDRESS” column to the most appropriate table containing customer information in your database schema.  
+Then write a stored procedure that uses the concat() function in MySQL to insert a customer's email address (domain is "@team[your team number].net") into the new column. 
+Test and show that the email addresses actually made it into the correct place in the table. (4 points)
+
+2) Create a “MAILER” table in which to store AT A MINIMUM senior citizens’ first name, last name, age, and email address. (2 points)
+
+3) Write a trigger that inserts senior citizens’ information into the MAILER table after using the NOW() or a similar dynamic function to calculate their age.  
+Test your trigger by changing a customer's birth date to over 57 years of age from the command line and demonstrating how the customer’s name and email address 
+has been automatically added to the MAILER table. (3 points)
+
+4) Type the honor code and your name into the command line. (1 point)
+
+
+
+1)
+
+mysql> alter table individual
+    -> add EMAIL_ADDRESS varchar(50);
+Query OK, 0 rows affected (0.12 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+Table before any changes:
+
+mysql> select * from individual;
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+| INDIVIDUAL_ID | INDIVIDUAL_GIVEN_NAME | INDIVIDUAL_MIDDLE_NAME | INDIVIDUAL_FAMILY_NAME | INDIVIDUAL_ADDRESS_1      | INDIVIDUAL_ADDRESS_2 | INDIVIDUAL_ADDRESS_CITY | INDIVIDUAL_ADDRESS_STATE_PROV | INDIVIDUAL_ADDRESS_ZIP | INDIVIDUAL_ADDRESS_COUNTRY | INDIVIDUAL_PHONE | INDIVIDUAL_BIRTH_DATE | INDIVIDUAL_DEATH_DATE | EMAIL_ADDRESS     |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+|             1 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1970-07-04            | NULL                  | NULL              |
+|             2 | Yamila                | H                      | Concepcion             | 4088 Briarwood Road       | NULL                 | Springfield             | MO                            | 65804                  | US                         | 417 885 2573     | 1968-05-05            | NULL                  | NULL              |
+|             3 | Tobias                | U                      | Holtzmann              | 760 Langtown Road         | NULL                 | Zwingle                 | iA                            | 52079                  | US                         | 563 686 8388     | 1981-09-27            | NULL                  | NULL              |
+|             4 | Mavise                | C                      | Gagnon                 | 3524 Goldie Lane          | NULL                 | Middletown              | OH                            | 45044                  | US                         | 513 420 8726     | 1983-08-26            | NULL                  | NULL              |
+|             5 | Marius                | L                      | Schultz                | 2533 Alpaca Way           | NULL                 | Orange                  | CA                            | 92632                  | US                         | 714 771 0603     | 1951-06-20            | NULL                  | NULL              |
+|             6 | Karl                  | S                      | Pettersson             | 4478 Collins Street       | NULL                 | Genesee                 | PA                            | 16923                  | US                         | 814 228 3988     | 1953-12-15            | NULL                  | NULL              |
+|             7 | Glen                  | A                      | Lavigne                | 2902 Libby Street         | NULL                 | Gardena                 | CA                            | 90247                  | US                         | 310 327 9257     | 1980-04-16            | NULL                  | NULL              |
+|             8 | Tosh                  | C                      | Jacobsen               | 171 B Street              | NULL                 | Shoreview               | MN                            | 55126                  | US                         | 651 486 3207     | 1949-03-16            | 2013-03-30            | NULL              |
+|             9 | Filip                 | D                      | Krusina                | 1547 Callison Lane        | NULL                 | WiLiangton              | DE                            | 19801                  | US                         | 302 384 5469     | 1981-02-28            | NULL                  | NULL              |
+|            10 | Elisabeth             | W                      | Kaneshiro              | 1574 Elk Street           | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 949 606 3845     | 1959-08-13            | NULL                  | NULL              |
+|            11 | Radek                 | L                      | Zouhar                 | 2706 Williams Mine Road   | NULL                 | Gambell                 | AK                            | 99742                  | US                         | 907 985 1060     | 1960-04-16            | NULL                  | NULL              |
+|            12 | Yoshihide             | S                      | Ono                    | 943 Sumner Street         | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 310 620 8198     | 1994-06-17            | NULL                  | NULL              |
+|            13 | Ananias               | M                      | Sauceda                | 541 Christie Way          | NULL                 | Framingham              | MA                            | 1702                   | US                         | 978 831 8609     | 1974-11-15            | NULL                  | NULL              |
+|            14 | Tim                   | M                      | Holmberg               | 1555 Granville Lane       | NULL                 | Wayne                   | NJ                            | 7477                   | US                         | 973 517 9993     | 1974-12-21            | NULL                  | NULL              |
+|            15 | Meisie                | B                      | Alanis                 | 1950 Bingamon Branch Road | NULL                 | Wurtsboro               | NY                            | 12790                  | US                         | 845 888 1375     | 1976-05-14            | NULL                  | NULL              |
+|            16 | Jennifer              | H                      | Turner                 | 1907 Walton Street        | Apt 12               | Orem                    | UT                            | 84058                  | US                         | 801 431 8099     | 1953-07-16            | NULL                  | NULL              |
+|            17 | Amarante              | P                      | Clement                | 1258 Boring Lane          | NULL                 | Dublin                  | CA                            | 94568                  | US                         | 415 720 2952     | 1988-08-01            | NULL                  | NULL              |
+|            18 | Shizuru               | T                      | Oota                   | 3633 Prudence Street      | NULL                 | Southfield              | Mi                            | 48235                  | US                         | 313 344 9647     | 1987-08-28            | NULL                  | NULL              |
+|            19 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1952-11-27            | 2010-03-30            | NULL              |
+|            20 | Marko                 | L                      | Probst                 | 2469 Late Avenue          | NULL                 | Durant                  | OK                            | 74701                  | US                         | 580 745 6377     | 1950-09-05            | NULL                  | NULL              |
+|            21 | Toc                   | H                      | Ton                    | 1957 Martha Ellen Drive   | NULL                 | Reno                    | NE                            | 89503                  | US                         | 775 787 2854     | 1956-05-14            | NULL                  | NULL              |
+|            22 | Waliy al Din          | Z                      | Kalb                   | 2853 Joes Road            | NULL                 | Plattsburgh             | NY                            | 12901                  | US                         | 518 817 5307     | 1946-11-28            | NULL                  | NULL              |
+|            23 | Kazuhiro              | U                      | Oike                   | 4145 Romano Street        | NULL                 | Wakefield               | MA                            | 1880                   | US                         | 781 438 2337     | 1961-07-28            | NULL                  | NULL              |
+|            24 | Sander                | S                      | Nygaard                | 585 Briercliff Road       | NULL                 | Brooklyn                | NY                            | 11206                  | US                         | 718 606 7820     | 1945-04-21            | NULL                  | NULL              |
+|            25 | irena                 | F                      | Zykova                 | 921 Bungalow Road         | NULL                 | Omaha                   | NE                            | 68124                  | US                         | 402 938 5663     | 1986-09-29            | NULL                  | NULL              |
+|            26 | Dana                  | J                      | Zemanova               | 595 Thompson Street       | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 562 681 0868     | 1976-04-07            | NULL                  | NULL              |
+|            27 | Vera                  | i                      | Blazkova               | 1016 Stonecoal Road       | NULL                 | Clyde                   | OH                            | 43410                  | US                         | 419 547 9462     | 1966-04-14            | NULL                  | NULL              |
+|            28 | Chalten               | U                      | Galvan                 | 3603 Pinnickinnick Street | NULL                 | Freehold                | NJ                            | 7728                   | US                         | 732 780 6216     | 1952-02-06            | NULL                  | NULL              |
+|            29 | Buthaynah             | W                      | Shammas                | 348 Mulberry Street       | NULL                 | Center                  | TX                            | 75935                  | US                         | 936 556 1088     | 1966-12-22            | NULL                  | NULL              |
+|            30 | Melusina              | C                      | Plante                 | 1902 Collins Avenue       | NULL                 | Columbus                | OH                            | 43213                  | US                         | 614 860 5981     | 1963-06-26            | NULL                  | NULL              |
+|          3000 | Wilmer                | D                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-17            | NULL                  | NULL              |
+|          3001 | Fiona                 | T                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-24            | NULL                  | NULL              |
+|          3002 | Agaton                | J                      | Magnusson              | 185 Losh Lane             | NULL                 | Crafton                 | PA                            | 15205                  | US                         | 412 671 9110     | 1970-01-09            | NULL                  | NULL              |
+|          3003 | Douglas               | U                      | Magnusson              | 3412 Peck Court           | NULL                 | Fullerton               | CA                            | 93632                  | US                         | 949 463 0237     | 1970-07-25            | NULL                  | NULL              |
+|          3004 | Falah                 | L                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1981-08-25            | NULL                  | NULL              |
+|          3005 | Naila                 | Akilah                 | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1988-05-25            | NULL                  | NULL              |
+|          3006 | Kaseeb                | H                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 2000-05-25            | NULL                  | NULL              |
+|          3007 | Yehuda                | israel                 | Abramowitz             | 2179 Clarksburg Park Road | NULL                 | St Johns                | AZ                            | 85936                  | US                         | 928 337 7737     | 1956-04-24            | NULL                  | NULL              |
+|          3008 | Veda                  | Reddy                  | Achaya                 | 1757 Progress Way         | NULL                 | Denver                  | iA                            | 50622                  | US                         | 319 984 8012     | 1993-05-03            | NULL                  | NULL              |
+|          3009 | Selah                 | Corinne                | Adams                  | 2894 Wilson Avenue        | NULL                 | Dallas                  | TX                            | 75248                  | US                         | 972 523 9938     | 1995-05-05            | NULL                  | NULL              |
+|          3010 | Jessica               | M                      | Martin                 | 4320 Charles Street       | NULL                 | Livonia                 | Mi                            | 48150                  | US                         | 734 422 0624     | 1971-06-06            | NULL                  | NULL              |
+|          3011 | Langston              | James                  | Martin                 | 4646 Ashwood Drive        | NULL                 | Whiting                 | iA                            | 51063                  | US                         | 712 455 4183     | 1972-06-08            | NULL                  | NULL              |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+42 rows in set (0.00 sec)
+
+Procedure that inserts all of the customers email addresses:
+
+mysql> create procedure AllEmail()
+    -> begin
+    -> update individual
+    -> set email_address = concat(individual_given_name, individual_family_name, '@team20.net');
+    -> end//
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> call AllEmail();
+Query OK, 42 rows affected (0.01 sec)
+
+mysql> select * from individual;
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------------------+
+| INDIVIDUAL_ID | INDIVIDUAL_GIVEN_NAME | INDIVIDUAL_MIDDLE_NAME | INDIVIDUAL_FAMILY_NAME | INDIVIDUAL_ADDRESS_1      | INDIVIDUAL_ADDRESS_2 | INDIVIDUAL_ADDRESS_CITY | INDIVIDUAL_ADDRESS_STATE_PROV | INDIVIDUAL_ADDRESS_ZIP | INDIVIDUAL_ADDRESS_COUNTRY | INDIVIDUAL_PHONE | INDIVIDUAL_BIRTH_DATE | INDIVIDUAL_DEATH_DATE | EMAIL_ADDRESS                 |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------------------+
+|             1 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1970-07-04            | NULL                  | CongYu@team20.net             |
+|             2 | Yamila                | H                      | Concepcion             | 4088 Briarwood Road       | NULL                 | Springfield             | MO                            | 65804                  | US                         | 417 885 2573     | 1968-05-05            | NULL                  | YamilaConcepcion@team20.net   |
+|             3 | Tobias                | U                      | Holtzmann              | 760 Langtown Road         | NULL                 | Zwingle                 | iA                            | 52079                  | US                         | 563 686 8388     | 1981-09-27            | NULL                  | TobiasHoltzmann@team20.net    |
+|             4 | Mavise                | C                      | Gagnon                 | 3524 Goldie Lane          | NULL                 | Middletown              | OH                            | 45044                  | US                         | 513 420 8726     | 1983-08-26            | NULL                  | MaviseGagnon@team20.net       |
+|             5 | Marius                | L                      | Schultz                | 2533 Alpaca Way           | NULL                 | Orange                  | CA                            | 92632                  | US                         | 714 771 0603     | 1951-06-20            | NULL                  | MariusSchultz@team20.net      |
+|             6 | Karl                  | S                      | Pettersson             | 4478 Collins Street       | NULL                 | Genesee                 | PA                            | 16923                  | US                         | 814 228 3988     | 1953-12-15            | NULL                  | KarlPettersson@team20.net     |
+|             7 | Glen                  | A                      | Lavigne                | 2902 Libby Street         | NULL                 | Gardena                 | CA                            | 90247                  | US                         | 310 327 9257     | 1980-04-16            | NULL                  | GlenLavigne@team20.net        |
+|             8 | Tosh                  | C                      | Jacobsen               | 171 B Street              | NULL                 | Shoreview               | MN                            | 55126                  | US                         | 651 486 3207     | 1949-03-16            | 2013-03-30            | ToshJacobsen@team20.net       |
+|             9 | Filip                 | D                      | Krusina                | 1547 Callison Lane        | NULL                 | WiLiangton              | DE                            | 19801                  | US                         | 302 384 5469     | 1981-02-28            | NULL                  | FilipKrusina@team20.net       |
+|            10 | Elisabeth             | W                      | Kaneshiro              | 1574 Elk Street           | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 949 606 3845     | 1959-08-13            | NULL                  | ElisabethKaneshiro@team20.net |
+|            11 | Radek                 | L                      | Zouhar                 | 2706 Williams Mine Road   | NULL                 | Gambell                 | AK                            | 99742                  | US                         | 907 985 1060     | 1960-04-16            | NULL                  | RadekZouhar@team20.net        |
+|            12 | Yoshihide             | S                      | Ono                    | 943 Sumner Street         | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 310 620 8198     | 1994-06-17            | NULL                  | YoshihideOno@team20.net       |
+|            13 | Ananias               | M                      | Sauceda                | 541 Christie Way          | NULL                 | Framingham              | MA                            | 1702                   | US                         | 978 831 8609     | 1974-11-15            | NULL                  | AnaniasSauceda@team20.net     |
+|            14 | Tim                   | M                      | Holmberg               | 1555 Granville Lane       | NULL                 | Wayne                   | NJ                            | 7477                   | US                         | 973 517 9993     | 1974-12-21            | NULL                  | TimHolmberg@team20.net        |
+|            15 | Meisie                | B                      | Alanis                 | 1950 Bingamon Branch Road | NULL                 | Wurtsboro               | NY                            | 12790                  | US                         | 845 888 1375     | 1976-05-14            | NULL                  | MeisieAlanis@team20.net       |
+|            16 | Jennifer              | H                      | Turner                 | 1907 Walton Street        | Apt 12               | Orem                    | UT                            | 84058                  | US                         | 801 431 8099     | 1953-07-16            | NULL                  | JenniferTurner@team20.net     |
+|            17 | Amarante              | P                      | Clement                | 1258 Boring Lane          | NULL                 | Dublin                  | CA                            | 94568                  | US                         | 415 720 2952     | 1988-08-01            | NULL                  | AmaranteClement@team20.net    |
+|            18 | Shizuru               | T                      | Oota                   | 3633 Prudence Street      | NULL                 | Southfield              | Mi                            | 48235                  | US                         | 313 344 9647     | 1987-08-28            | NULL                  | ShizuruOota@team20.net        |
+|            19 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1952-11-27            | 2010-03-30            | CongYu@team20.net             |
+|            20 | Marko                 | L                      | Probst                 | 2469 Late Avenue          | NULL                 | Durant                  | OK                            | 74701                  | US                         | 580 745 6377     | 1950-09-05            | NULL                  | MarkoProbst@team20.net        |
+|            21 | Toc                   | H                      | Ton                    | 1957 Martha Ellen Drive   | NULL                 | Reno                    | NE                            | 89503                  | US                         | 775 787 2854     | 1956-05-14            | NULL                  | TocTon@team20.net             |
+|            22 | Waliy al Din          | Z                      | Kalb                   | 2853 Joes Road            | NULL                 | Plattsburgh             | NY                            | 12901                  | US                         | 518 817 5307     | 1946-11-28            | NULL                  | Waliy al DinKalb@team20.net   |
+|            23 | Kazuhiro              | U                      | Oike                   | 4145 Romano Street        | NULL                 | Wakefield               | MA                            | 1880                   | US                         | 781 438 2337     | 1961-07-28            | NULL                  | KazuhiroOike@team20.net       |
+|            24 | Sander                | S                      | Nygaard                | 585 Briercliff Road       | NULL                 | Brooklyn                | NY                            | 11206                  | US                         | 718 606 7820     | 1945-04-21            | NULL                  | SanderNygaard@team20.net      |
+|            25 | irena                 | F                      | Zykova                 | 921 Bungalow Road         | NULL                 | Omaha                   | NE                            | 68124                  | US                         | 402 938 5663     | 1986-09-29            | NULL                  | irenaZykova@team20.net        |
+|            26 | Dana                  | J                      | Zemanova               | 595 Thompson Street       | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 562 681 0868     | 1976-04-07            | NULL                  | DanaZemanova@team20.net       |
+|            27 | Vera                  | i                      | Blazkova               | 1016 Stonecoal Road       | NULL                 | Clyde                   | OH                            | 43410                  | US                         | 419 547 9462     | 1966-04-14            | NULL                  | VeraBlazkova@team20.net       |
+|            28 | Chalten               | U                      | Galvan                 | 3603 Pinnickinnick Street | NULL                 | Freehold                | NJ                            | 7728                   | US                         | 732 780 6216     | 1952-02-06            | NULL                  | ChaltenGalvan@team20.net      |
+|            29 | Buthaynah             | W                      | Shammas                | 348 Mulberry Street       | NULL                 | Center                  | TX                            | 75935                  | US                         | 936 556 1088     | 1966-12-22            | NULL                  | ButhaynahShammas@team20.net   |
+|            30 | Melusina              | C                      | Plante                 | 1902 Collins Avenue       | NULL                 | Columbus                | OH                            | 43213                  | US                         | 614 860 5981     | 1963-06-26            | NULL                  | MelusinaPlante@team20.net     |
+|          3000 | Wilmer                | D                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-17            | NULL                  | WilmerLund@team20.net         |
+|          3001 | Fiona                 | T                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-24            | NULL                  | FionaLund@team20.net          |
+|          3002 | Agaton                | J                      | Magnusson              | 185 Losh Lane             | NULL                 | Crafton                 | PA                            | 15205                  | US                         | 412 671 9110     | 1970-01-09            | NULL                  | AgatonMagnusson@team20.net    |
+|          3003 | Douglas               | U                      | Magnusson              | 3412 Peck Court           | NULL                 | Fullerton               | CA                            | 93632                  | US                         | 949 463 0237     | 1970-07-25            | NULL                  | DouglasMagnusson@team20.net   |
+|          3004 | Falah                 | L                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1981-08-25            | NULL                  | FalahMansour@team20.net       |
+|          3005 | Naila                 | Akilah                 | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1988-05-25            | NULL                  | NailaMansour@team20.net       |
+|          3006 | Kaseeb                | H                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 2000-05-25            | NULL                  | KaseebMansour@team20.net      |
+|          3007 | Yehuda                | israel                 | Abramowitz             | 2179 Clarksburg Park Road | NULL                 | St Johns                | AZ                            | 85936                  | US                         | 928 337 7737     | 1956-04-24            | NULL                  | YehudaAbramowitz@team20.net   |
+|          3008 | Veda                  | Reddy                  | Achaya                 | 1757 Progress Way         | NULL                 | Denver                  | iA                            | 50622                  | US                         | 319 984 8012     | 1993-05-03            | NULL                  | VedaAchaya@team20.net         |
+|          3009 | Selah                 | Corinne                | Adams                  | 2894 Wilson Avenue        | NULL                 | Dallas                  | TX                            | 75248                  | US                         | 972 523 9938     | 1995-05-05            | NULL                  | SelahAdams@team20.net         |
+|          3010 | Jessica               | M                      | Martin                 | 4320 Charles Street       | NULL                 | Livonia                 | Mi                            | 48150                  | US                         | 734 422 0624     | 1971-06-06            | NULL                  | JessicaMartin@team20.net      |
+|          3011 | Langston              | James                  | Martin                 | 4646 Ashwood Drive        | NULL                 | Whiting                 | iA                            | 51063                  | US                         | 712 455 4183     | 1972-06-08            | NULL                  | LangstonMartin@team20.net     |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------------------+
+42 rows in set (0.00 sec)
+
+
+Procedure that inserts only one customer's email Address at a time:
+
+mysql> create procedure Email(ID int)
+    -> begin
+    -> update individual
+    -> set email_address = concat(individual_given_name, individual_family_name, '@team20.net')
+    -> where individual_id = ID;
+    -> end//
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> call Email(1);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from individual;
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+| INDIVIDUAL_ID | INDIVIDUAL_GIVEN_NAME | INDIVIDUAL_MIDDLE_NAME | INDIVIDUAL_FAMILY_NAME | INDIVIDUAL_ADDRESS_1      | INDIVIDUAL_ADDRESS_2 | INDIVIDUAL_ADDRESS_CITY | INDIVIDUAL_ADDRESS_STATE_PROV | INDIVIDUAL_ADDRESS_ZIP | INDIVIDUAL_ADDRESS_COUNTRY | INDIVIDUAL_PHONE | INDIVIDUAL_BIRTH_DATE | INDIVIDUAL_DEATH_DATE | EMAIL_ADDRESS     |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+|             1 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1970-07-04            | NULL                  | CongYu@team20.net |
+|             2 | Yamila                | H                      | Concepcion             | 4088 Briarwood Road       | NULL                 | Springfield             | MO                            | 65804                  | US                         | 417 885 2573     | 1968-05-05            | NULL                  | NULL              |
+|             3 | Tobias                | U                      | Holtzmann              | 760 Langtown Road         | NULL                 | Zwingle                 | iA                            | 52079                  | US                         | 563 686 8388     | 1981-09-27            | NULL                  | NULL              |
+|             4 | Mavise                | C                      | Gagnon                 | 3524 Goldie Lane          | NULL                 | Middletown              | OH                            | 45044                  | US                         | 513 420 8726     | 1983-08-26            | NULL                  | NULL              |
+|             5 | Marius                | L                      | Schultz                | 2533 Alpaca Way           | NULL                 | Orange                  | CA                            | 92632                  | US                         | 714 771 0603     | 1951-06-20            | NULL                  | NULL              |
+|             6 | Karl                  | S                      | Pettersson             | 4478 Collins Street       | NULL                 | Genesee                 | PA                            | 16923                  | US                         | 814 228 3988     | 1953-12-15            | NULL                  | NULL              |
+|             7 | Glen                  | A                      | Lavigne                | 2902 Libby Street         | NULL                 | Gardena                 | CA                            | 90247                  | US                         | 310 327 9257     | 1980-04-16            | NULL                  | NULL              |
+|             8 | Tosh                  | C                      | Jacobsen               | 171 B Street              | NULL                 | Shoreview               | MN                            | 55126                  | US                         | 651 486 3207     | 1949-03-16            | 2013-03-30            | NULL              |
+|             9 | Filip                 | D                      | Krusina                | 1547 Callison Lane        | NULL                 | WiLiangton              | DE                            | 19801                  | US                         | 302 384 5469     | 1981-02-28            | NULL                  | NULL              |
+|            10 | Elisabeth             | W                      | Kaneshiro              | 1574 Elk Street           | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 949 606 3845     | 1959-08-13            | NULL                  | NULL              |
+|            11 | Radek                 | L                      | Zouhar                 | 2706 Williams Mine Road   | NULL                 | Gambell                 | AK                            | 99742                  | US                         | 907 985 1060     | 1960-04-16            | NULL                  | NULL              |
+|            12 | Yoshihide             | S                      | Ono                    | 943 Sumner Street         | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 310 620 8198     | 1994-06-17            | NULL                  | NULL              |
+|            13 | Ananias               | M                      | Sauceda                | 541 Christie Way          | NULL                 | Framingham              | MA                            | 1702                   | US                         | 978 831 8609     | 1974-11-15            | NULL                  | NULL              |
+|            14 | Tim                   | M                      | Holmberg               | 1555 Granville Lane       | NULL                 | Wayne                   | NJ                            | 7477                   | US                         | 973 517 9993     | 1974-12-21            | NULL                  | NULL              |
+|            15 | Meisie                | B                      | Alanis                 | 1950 Bingamon Branch Road | NULL                 | Wurtsboro               | NY                            | 12790                  | US                         | 845 888 1375     | 1976-05-14            | NULL                  | NULL              |
+|            16 | Jennifer              | H                      | Turner                 | 1907 Walton Street        | Apt 12               | Orem                    | UT                            | 84058                  | US                         | 801 431 8099     | 1953-07-16            | NULL                  | NULL              |
+|            17 | Amarante              | P                      | Clement                | 1258 Boring Lane          | NULL                 | Dublin                  | CA                            | 94568                  | US                         | 415 720 2952     | 1988-08-01            | NULL                  | NULL              |
+|            18 | Shizuru               | T                      | Oota                   | 3633 Prudence Street      | NULL                 | Southfield              | Mi                            | 48235                  | US                         | 313 344 9647     | 1987-08-28            | NULL                  | NULL              |
+|            19 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1952-11-27            | 2010-03-30            | NULL              |
+|            20 | Marko                 | L                      | Probst                 | 2469 Late Avenue          | NULL                 | Durant                  | OK                            | 74701                  | US                         | 580 745 6377     | 1950-09-05            | NULL                  | NULL              |
+|            21 | Toc                   | H                      | Ton                    | 1957 Martha Ellen Drive   | NULL                 | Reno                    | NE                            | 89503                  | US                         | 775 787 2854     | 1956-05-14            | NULL                  | NULL              |
+|            22 | Waliy al Din          | Z                      | Kalb                   | 2853 Joes Road            | NULL                 | Plattsburgh             | NY                            | 12901                  | US                         | 518 817 5307     | 1946-11-28            | NULL                  | NULL              |
+|            23 | Kazuhiro              | U                      | Oike                   | 4145 Romano Street        | NULL                 | Wakefield               | MA                            | 1880                   | US                         | 781 438 2337     | 1961-07-28            | NULL                  | NULL              |
+|            24 | Sander                | S                      | Nygaard                | 585 Briercliff Road       | NULL                 | Brooklyn                | NY                            | 11206                  | US                         | 718 606 7820     | 1945-04-21            | NULL                  | NULL              |
+|            25 | irena                 | F                      | Zykova                 | 921 Bungalow Road         | NULL                 | Omaha                   | NE                            | 68124                  | US                         | 402 938 5663     | 1986-09-29            | NULL                  | NULL              |
+|            26 | Dana                  | J                      | Zemanova               | 595 Thompson Street       | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 562 681 0868     | 1976-04-07            | NULL                  | NULL              |
+|            27 | Vera                  | i                      | Blazkova               | 1016 Stonecoal Road       | NULL                 | Clyde                   | OH                            | 43410                  | US                         | 419 547 9462     | 1966-04-14            | NULL                  | NULL              |
+|            28 | Chalten               | U                      | Galvan                 | 3603 Pinnickinnick Street | NULL                 | Freehold                | NJ                            | 7728                   | US                         | 732 780 6216     | 1952-02-06            | NULL                  | NULL              |
+|            29 | Buthaynah             | W                      | Shammas                | 348 Mulberry Street       | NULL                 | Center                  | TX                            | 75935                  | US                         | 936 556 1088     | 1966-12-22            | NULL                  | NULL              |
+|            30 | Melusina              | C                      | Plante                 | 1902 Collins Avenue       | NULL                 | Columbus                | OH                            | 43213                  | US                         | 614 860 5981     | 1963-06-26            | NULL                  | NULL              |
+|          3000 | Wilmer                | D                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-17            | NULL                  | NULL              |
+|          3001 | Fiona                 | T                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-24            | NULL                  | NULL              |
+|          3002 | Agaton                | J                      | Magnusson              | 185 Losh Lane             | NULL                 | Crafton                 | PA                            | 15205                  | US                         | 412 671 9110     | 1970-01-09            | NULL                  | NULL              |
+|          3003 | Douglas               | U                      | Magnusson              | 3412 Peck Court           | NULL                 | Fullerton               | CA                            | 93632                  | US                         | 949 463 0237     | 1970-07-25            | NULL                  | NULL              |
+|          3004 | Falah                 | L                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1981-08-25            | NULL                  | NULL              |
+|          3005 | Naila                 | Akilah                 | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1988-05-25            | NULL                  | NULL              |
+|          3006 | Kaseeb                | H                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 2000-05-25            | NULL                  | NULL              |
+|          3007 | Yehuda                | israel                 | Abramowitz             | 2179 Clarksburg Park Road | NULL                 | St Johns                | AZ                            | 85936                  | US                         | 928 337 7737     | 1956-04-24            | NULL                  | NULL              |
+|          3008 | Veda                  | Reddy                  | Achaya                 | 1757 Progress Way         | NULL                 | Denver                  | iA                            | 50622                  | US                         | 319 984 8012     | 1993-05-03            | NULL                  | NULL              |
+|          3009 | Selah                 | Corinne                | Adams                  | 2894 Wilson Avenue        | NULL                 | Dallas                  | TX                            | 75248                  | US                         | 972 523 9938     | 1995-05-05            | NULL                  | NULL              |
+|          3010 | Jessica               | M                      | Martin                 | 4320 Charles Street       | NULL                 | Livonia                 | Mi                            | 48150                  | US                         | 734 422 0624     | 1971-06-06            | NULL                  | NULL              |
+|          3011 | Langston              | James                  | Martin                 | 4646 Ashwood Drive        | NULL                 | Whiting                 | iA                            | 51063                  | US                         | 712 455 4183     | 1972-06-08            | NULL                  | NULL              |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+-------------------+
+42 rows in set (0.00 sec)
+
+
+
+
+
+
+
+
+
+
+
+2)
+
+mysql> create table MAILER(
+    -> INDVIDUAL_ID int,
+    -> FIRST_NAME varchar(25),
+    -> LAST_NAME varchar(25),
+    -> AGE int,
+    -> EMAIL_ADDRESS varchar(50));
+Query OK, 0 rows affected (0.04 sec)
+
+
+
+
+
+
+
+
+
+
+
+3)
+
+mysql> select individual_id, individual_given_name, year(now())-year(individual_birth_date) as "Age" from individual;
++---------------+-----------------------+------+
+| individual_id | individual_given_name | Age  |
++---------------+-----------------------+------+
+|             1 | Cong                  |   50 |
+|             2 | Yamila                |   52 |
+|             3 | Tobias                |   39 |
+|             4 | Mavise                |   37 |
+|             5 | Marius                |   69 |
+|             6 | Karl                  |   67 |
+|             7 | Glen                  |   40 |
+|             8 | Tosh                  |   71 |
+|             9 | Filip                 |   39 |
+|            10 | Elisabeth             |   61 |
+|            11 | Radek                 |   60 |
+|            12 | Yoshihide             |   26 |
+|            13 | Ananias               |   46 |
+|            14 | Tim                   |   46 |
+|            15 | Meisie                |   44 |
+|            16 | Jennifer              |   67 |
+|            17 | Amarante              |   32 |
+|            18 | Shizuru               |   33 |
+|            19 | Cong                  |   68 |
+|            20 | Marko                 |   70 |
+|            21 | Toc                   |   64 |
+|            22 | Waliy al Din          |   74 |
+|            23 | Kazuhiro              |   59 |
+|            24 | Sander                |   75 |
+|            25 | irena                 |   34 |
+|            26 | Dana                  |   44 |
+|            27 | Vera                  |   54 |
+|            28 | Chalten               |   68 |
+|            29 | Buthaynah             |   54 |
+|            30 | Melusina              |   57 |
+|          3000 | Wilmer                |   41 |
+|          3001 | Fiona                 |   41 |
+|          3002 | Agaton                |   50 |
+|          3003 | Douglas               |   50 |
+|          3004 | Falah                 |   39 |
+|          3005 | Naila                 |   32 |
+|          3006 | Kaseeb                |   20 |
+|          3007 | Yehuda                |   64 |
+|          3008 | Veda                  |   27 |
+|          3009 | Selah                 |   25 |
+|          3010 | Jessica               |   49 |
+|          3011 | Langston              |   48 |
++---------------+-----------------------+------+
+42 rows in set (0.00 sec)
+
+mysql> select individual_id, individual_given_name, year(now()) - year(individual_birth_date) as "Age" from individual
+    -> where year(now()) - year(individual_birth_date) > 57;
++---------------+-----------------------+------+
+| individual_id | individual_given_name | Age  |
++---------------+-----------------------+------+
+|             5 | Marius                |   69 |
+|             6 | Karl                  |   67 |
+|             8 | Tosh                  |   71 |
+|            10 | Elisabeth             |   61 |
+|            11 | Radek                 |   60 |
+|            16 | Jennifer              |   67 |
+|            19 | Cong                  |   68 |
+|            20 | Marko                 |   70 |
+|            21 | Toc                   |   64 |
+|            22 | Waliy al Din          |   74 |
+|            23 | Kazuhiro              |   59 |
+|            24 | Sander                |   75 |
+|            28 | Chalten               |   68 |
+|          3007 | Yehuda                |   64 |
++---------------+-----------------------+------+
+14 rows in set (0.00 sec)
+
+mysql> select * from mailer;
+Empty set (0.01 sec)
+
+Attempt 1:
+
+mysql> create trigger After_Inidividual_Update
+    -> after update on individual
+    -> for each row
+    -> begin
+    -> insert into mailer
+    -> set individual_id = new.individual_id,
+    -> first_name = new.individual_given_name,
+    -> last_name = new.individual_family_name,
+    -> age = year(now()) - year(new.individual_birth_date),
+    -> email_address = new.email_address
+    -> where individual.individual_id = old_people.individual_id;
+    -> end //
+
+
+Attempt 2:
+
+mysql> create trigger After_Inidividual_Update
+    -> after update on individual
+    -> for each row
+    -> begin
+    -> insert into mailer
+    -> set individual_id = new.individual_id,
+    -> first_name = new.individual_given_name,
+    -> last_name = new.individual_family_name,
+    -> age = year(now()) - year(new.individual_birth_date),
+    -> email_address = new.email_address
+    -> where year(individual.individual_birth_date) > 1963;
+    -> end //
+
+Attempt 3:
+
+mysql> create trigger after_individual_update
+    -> after update on individual
+    -> for each row
+    -> begin
+    -> insert into mailer
+    -> set individual_id = new.individual_id,
+    -> first_name =new.individual_given_name,
+    -> last_name = new.individual_family_name,
+    -> age = year(now()) - year(new.individual_birth_date),
+    -> email_address = new.email_address
+    -> select individual_id, individual_given_name, individual_family_name,
+    -> individual_birth_date, email_address from individual
+    -> where year(new.individual_birth_date) < 1963;
+    -> end //
+
+Attempt 4:
+
+mysql> create trigger seniors
+    -> after update on individual
+    -> for each row
+    -> begin
+    -> insert into mailer
+    -> set individual_id = new.individual_id,
+    -> first_name = new.individual_given_name,
+    -> last_name = individual_family_name,
+    -> age = year(now()) - year(new.individual_birth_date),
+    -> email_address = new.email_address
+    -> where year(now()) - year(new.individual_birth_date) > 57
+    -> end //
+
+All of my attempts threw errors, and I really am not sure how to make this Trigger. I'm sorry for turning in broken code, but I feel like I am at a dead end.
+I have worked on trying to get the trigger for multiple hours over the past 2 days and even asked some friends from class to help. However, none of us could figure it out together. 
+Again, I'm very sorry for turning in broken code for the last question, but I'm hoping that with my 4 different attempts here, you will be able to see if I came close 
+to getting the trigger correct. Then once I find out what the correct code is I will give myself a solid forhead smack lol. Thank you for understanding!
+
+
+
+
+
+
+
+
+4)
+
+mysql> I have neither given or received, nor have I tolerated others' use of unauthorized aid. - Dawson Demien
+
+

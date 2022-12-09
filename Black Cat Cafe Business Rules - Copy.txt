@@ -1,0 +1,12 @@
+1) Multiple cafés are located in the same city
+
+2) Employees in each city are supervised by one city manager, and the city managers 
+are supervised by the regional manager.  Each café has a unique ID number. 
+
+3) Some customers use the Black Cat app to order their drinks before they arrive at the café.
+ 
+4) Each drink order is supposed to be completed in 3 minutes or less, with hot drink 
+temperature at 160 F and cold drink temperature at 40 F. 
+
+5) If customers complain, they get a free drink coupon for $5, and the employee who 
+prepared the drink gets a warning in his or her email, cc’d to the manager.

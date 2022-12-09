@@ -1,0 +1,252 @@
+1)Use the MySQL Command Line Client (NOT Workbench!) to install the SALES_DB, then prove that all tables have imported 
+and that at least one table is available and contains data. If you cannot use the Command Line Client, 
+use Workbench and include your code and the error message you are getting with the Command Line Client, 
+then describe how you have tried to solve the issue. (2 points)
+
+2)Which customer has the highest order amount? (2 points)
+
+3)What is the name of the salesperson for customers Liu and Grass? (3 points)
+
+4)Help the company automate customer information!
+	a.Add a column to the customers table that will hold each customer's telephone number. (1 points)
+	b.Write a stored procedure that will update the customer table with a telephone number for any particular customer. 
+	  The phone number should always have an 877 prefix (for example, (877) 555-1212)) 
+              
+                (4 points) 
+              
+	c.Test the stored procedure to prove that it works. (2 points)
+
+
+
+1)
+
+mysql> drop database sales_db;
+Query OK, 17 rows affected (0.73 sec)
+
+mysql> source 'C:\Users\dawso\Desktop\Databases\SALES_DB2.sql';
+ERROR:
+Failed to open file ''C:\Users\dawso\Desktop\Databases\SALES_DB2.sql'', error: 22
+
+I have tried to solve this by removing and adding the ".sql" to my file name in the command line and in 
+my file explorer. 
+
+mysql> use sales_db;
+Database changed
+
+mysql> show tables;
++--------------------+
+| Tables_in_sales_db |
++--------------------+
+| customers          |
+| orders             |
+| salespeople        |
++--------------------+
+3 rows in set (0.00 sec)
+
+mysql> desc customers;
++--------+----------+------+-----+---------+-------+
+| Field  | Type     | Null | Key | Default | Extra |
++--------+----------+------+-----+---------+-------+
+| cnum   | int      | NO   | PRI | NULL    |       |
+| cname  | char(15) | YES  |     | NULL    |       |
+| city   | char(15) | YES  |     | NULL    |       |
+| rating | int      | YES  |     | NULL    |       |
+| snum   | int      | YES  |     | NULL    |       |
++--------+----------+------+-----+---------+-------+
+5 rows in set (0.06 sec)
+
+mysql> select * from customers;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | Hoffman  | London   |    100 | 1001 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |   NULL | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+
+
+
+2)
+
+mysql> create view highest_amot as
+    -> select customers.cnum, customers.cname, orders.amot
+    -> from customers, orders
+    -> where customers.cnum = orders.cnum;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from highest_amot;
++------+----------+---------+
+| cnum | cname    | amot    |
++------+----------+---------+
+| 2004 | Grass    | 1309.95 |
+| 2008 | Cisneros |   18.69 |
+| 2007 | Pereira  | 1900.10 |
+| 2001 | Hoffman  |  767.19 |
+| 2003 | Liu      | 5160.45 |
+| 2008 | Cisneros | 1098.16 |
+| 2004 | Grass    |   75.75 |
+| 2006 | Clemens  | 4723.00 |
+| 2002 | Giovanni | 1713.23 |
+| 2006 | Clemens  | 9891.88 |
++------+----------+---------+
+10 rows in set (0.01 sec)
+
+mysql> select cname, max(amot) as "Highest Amount" from highest_amot
+    -> group by cname
+    -> order by max(amot) desc;
++----------+----------------+
+| cname    | Highest Amount |
++----------+----------------+
+| Clemens  |        9891.88 |
+| Liu      |        5160.45 |
+| Pereira  |        1900.10 |
+| Giovanni |        1713.23 |
+| Grass    |        1309.95 |
+| Cisneros |        1098.16 |
+| Hoffman  |         767.19 |
++----------+----------------+
+7 rows in set (0.00 sec)
+
+mysql>
+
+So Clemens has the highest order amount.
+
+
+
+3)
+
+mysql> create view LG_sale as
+    -> select customers.cnum, customers.cname, salespeople.sname
+    -> from customers, salespeople
+    -> where customers.snum = salespeople.snum;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from LG_sale;
++------+----------+---------+
+| cnum | cname    | sname   |
++------+----------+---------+
+| 2001 | Hoffman  | Peel    |
+| 2002 | Giovanni | Axelrod |
+| 2003 | Liu      | Serres  |
+| 2004 | Grass    | Serres  |
+| 2006 | Clemens  | Peel    |
+| 2007 | Pereira  | Motika  |
+| 2008 | Cisneros | Rifkin  |
++------+----------+---------+
+7 rows in set (0.00 sec)
+
+mysql> select * from LG_sale
+    -> where cname = "Grass" or
+    -> cname = "Liu";
++------+-------+--------+
+| cnum | cname | sname  |
++------+-------+--------+
+| 2003 | Liu   | Serres |
+| 2004 | Grass | Serres |
++------+-------+--------+
+2 rows in set (0.00 sec)
+
+So Serres is Liu and Grass's salesperson
+
+
+
+
+4)
+
+mysql> alter table customers
+    -> add telephone_number varchar(15);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc customers;
++------------------+-------------+------+-----+---------+-------+
+| Field            | Type        | Null | Key | Default | Extra |
++------------------+-------------+------+-----+---------+-------+
+| cnum             | int         | NO   | PRI | NULL    |       |
+| cname            | char(15)    | YES  |     | NULL    |       |
+| city             | char(15)    | YES  |     | NULL    |       |
+| rating           | int         | YES  |     | NULL    |       |
+| snum             | int         | YES  |     | NULL    |       |
+| telephone_number | varchar(15) | YES  |     | NULL    |       |
++------------------+-------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+mysql> create procedure Phone(Pnumber varchar(15), customer char(15))
+    -> begin
+    -> update customers
+    -> set telephone_number = concat('(877)', Pnumber)
+    -> where cname = customer;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> call Phone('555-1212', 'Liu');
+Query OK, 1 row affected, 2 warnings (0.01 sec)
+
+mysql> select * from customers;
++------+----------+----------+--------+------+------------------+
+| cnum | cname    | city     | rating | snum | telephone_number |
++------+----------+----------+--------+------+------------------+
+| 2001 | Hoffman  | London   |    100 | 1001 | NULL             |
+| 2002 | Giovanni | Rome     |    200 | 1003 | NULL             |
+| 2003 | Liu      | San Jose |    200 | 1002 | (877)555-1212    |
+| 2004 | Grass    | Berlin   |    300 | 1002 | NULL             |
+| 2006 | Clemens  | London   |   NULL | 1001 | NULL             |
+| 2007 | Pereira  | Rome     |    100 | 1004 | NULL             |
+| 2008 | Cisneros | San Jose |    300 | 1007 | NULL             |
++------+----------+----------+--------+------+------------------+
+7 rows in set (0.00 sec)
+
+
+
+
+EXTRA CREDIT:
+
+1)
+mysql> insert into customers (cnum, cname, city, rating, snum)
+    -> values (2009, 'Muller', 'Munich', NULL, 1002);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from customers;
++------+----------+----------+--------+------+------------------+
+| cnum | cname    | city     | rating | snum | telephone_number |
++------+----------+----------+--------+------+------------------+
+| 2001 | Hoffman  | London   |    100 | 1001 | NULL             |
+| 2002 | Giovanni | Rome     |    200 | 1003 | NULL             |
+| 2003 | Liu      | San Jose |    200 | 1002 | (877)555-1212    |
+| 2004 | Grass    | Berlin   |    300 | 1002 | NULL             |
+| 2006 | Clemens  | London   |   NULL | 1001 | NULL             |
+| 2007 | Pereira  | Rome     |    100 | 1004 | NULL             |
+| 2008 | Cisneros | San Jose |    300 | 1007 | NULL             |
+| 2009 | Muller   | Munich   |   NULL | 1002 | NULL             |
++------+----------+----------+--------+------+------------------+
+8 rows in set (0.00 sec)
+
+
+2)
+mysql> update customers
+    -> set snum = 1004
+    -> where city = "Rome";
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 2  Changed: 1  Warnings: 0
+
+mysql> select * from customers;
++------+----------+----------+--------+------+------------------+
+| cnum | cname    | city     | rating | snum | telephone_number |
++------+----------+----------+--------+------+------------------+
+| 2001 | Hoffman  | London   |    100 | 1001 | NULL             |
+| 2002 | Giovanni | Rome     |    200 | 1004 | NULL             |
+| 2003 | Liu      | San Jose |    200 | 1002 | (877)555-1212    |
+| 2004 | Grass    | Berlin   |    300 | 1002 | NULL             |
+| 2006 | Clemens  | London   |   NULL | 1001 | NULL             |
+| 2007 | Pereira  | Rome     |    100 | 1004 | NULL             |
+| 2008 | Cisneros | San Jose |    300 | 1007 | NULL             |
+| 2009 | Muller   | Munich   |   NULL | 1002 | NULL             |
++------+----------+----------+--------+------+------------------+
+8 rows in set (0.00 sec)
+

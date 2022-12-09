@@ -1,0 +1,170 @@
+1)
+
+mysql> select cname, max(rating) as "rating" from customers
+    -> where cnum in
+    -> (select cnum from orders where odate = '2000-10-03');
++----------+--------+
+| cname    | rating |
++----------+--------+
+| Cisneros |    300 |
++----------+--------+
+1 row in set (0.00 sec)
+
+I used this to find the max rating for anyone that ordered on 2000-10-03
+
+This is my solution:
+
+mysql> select cname, rating from customers
+    -> where cnum in
+    -> (select cnum from orders where odate > '2000-10-03') and
+    -> rating > (select rating from customers where cname = "Cisneros");
+Empty set (0.00 sec)
+
+
+
+2)
+
+mysql> select avg(rating) as "Average Rating" from customers
+    -> where cnum in
+    -> (select cnum from orders where amot > 1000.0);
++----------------+
+| Average Rating |
++----------------+
+|       220.0000 |
++----------------+
+1 row in set (0.00 sec)
+
+
+
+3)
+
+mysql> select count(cname) as "Total Customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.10);
++-----------------+
+| Total Customers |
++-----------------+
+|               1 |
++-----------------+
+1 row in set (0.00 sec)
+
+
+
+4)
+
+
+This is so that i know how many customers each salesperson has:
+
+mysql> select snum, count(cname) as "# of customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.11);
++------+----------------+
+| snum | # of customers |
++------+----------------+
+| 1004 |              1 |
++------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select snum, count(cname) as "# of customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.13);
++------+----------------+
+| snum | # of customers |
++------+----------------+
+| 1002 |              2 |
++------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select snum, count(cname) as "# of customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.12);
++------+----------------+
+| snum | # of customers |
++------+----------------+
+| 1001 |              2 |
++------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select snum, count(cname) as "# of customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.15);
++------+----------------+
+| snum | # of customers |
++------+----------------+
+| 1007 |              1 |
++------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select snum, count(cname) as "# of customers" from customers
+    -> where snum = (select snum from salespeople where comm = 0.10);
++------+----------------+
+| snum | # of customers |
++------+----------------+
+| 1003 |              1 |
++------+----------------+
+1 row in set (0.00 sec)
+
+This is the total amount of money each sales peron made:
+
+mysql> select snum, sum(amot) from orders group by snum;
++------+-----------+
+| snum | sum(amot) |
++------+-----------+
+| 1002 |   6546.15 |
+| 1007 |   1116.85 |
+| 1004 |   1900.10 |
+| 1001 |  15382.07 |
+| 1003 |   1713.23 |
++------+-----------+
+5 rows in set (0.00 sec)
+
+
+mysql> select sname from salespeople
+    -> where snum = (select snum from salespeople where snum = 1001);
++-------+
+| sname |
++-------+
+| Peel  |
++-------+
+1 row in set (0.00 sec)
+
+
+5)
+
+mysql> select cnum, count(onum) as "orders" from orders group by cnum;
++------+--------+
+| cnum | orders |
++------+--------+
+| 2004 |      2 |
+| 2008 |      2 |
+| 2007 |      1 |
+| 2001 |      1 |
+| 2003 |      1 |
+| 2006 |      2 |
+| 2002 |      1 |
++------+--------+
+7 rows in set (0.00 sec)
+
+I had three different outputs since there where three people with the same amount of orders:
+
+mysql> select cname from customers
+    -> where cnum = (select cnum from customers where cnum = 2006);
++---------+
+| cname   |
++---------+
+| Clemens |
++---------+
+1 row in set (0.00 sec)
+
+mysql> select cname from customers
+    -> where cnum = (select cnum from customers where cnum = 2008);
++----------+
+| cname    |
++----------+
+| Cisneros |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select cname from customers
+    -> where cnum = (select cnum from customers where cnum = 2004);
++-------+
+| cname |
++-------+
+| Grass |
++-------+
+1 row in set (0.00 sec)

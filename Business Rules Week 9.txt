@@ -1,0 +1,15 @@
+Oil-O-Matic Business Rules-
+
+1) A garage can employ only one store manager and one assistant store manager
+
+2) A garage can employ anywhere from 1 to 5 employees
+
+3) A customer with a "sythentic" status receives sythentic oil for their oil change
+
+4) A customer with a "regular" status receives regular oil for their oil change
+
+5) Oil is be described by oil type
+
+6) A customer can have one or more reviews
+
+7) An oil change contains one customer

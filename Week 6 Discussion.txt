@@ -1,0 +1,55 @@
+1)
+
+mysql> create table commission_audit (
+    -> change_id int(5) not null auto_increment,
+    -> salesperson_id int(11) not null,
+    -> last_name varchar(25) not null,
+    -> action varchar(50) default null,
+    -> datestamp datetime default null,
+    -> primary key (change_id) );
+Query OK, 0 rows affected, 2 warnings (0.13 sec)
+
+
+
+
+2)
+
+mysql> create trigger before_salespeople_update
+    -> before update on salespeople
+    -> for each row
+    -> begin
+    -> insert into commission_audit
+    -> set action = 'UPDATE',
+    -> salesperson_id = old.snum,
+    -> last_name = old.sname,
+    -> datestamp = Now();
+    -> end//
+Query OK, 0 rows affected (0.03 sec)
+
+
+
+
+3)
+
+mysql> call IDComm('1002', '0.05');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from salespeople;
++------+---------+-----------+------+
+| snum | sname   | city      | comm |
++------+---------+-----------+------+
+| 1001 | Peel    | London    | 0.20 |
+| 1002 | Serres  | San Jose  | 0.05 |
+| 1003 | Axelrod | New York  | 0.10 |
+| 1004 | Motika  | London    | 0.11 |
+| 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+-----------+------+
+5 rows in set (0.00 sec)
+
+mysql> select * from commission_audit;
++-----------+----------------+-----------+--------+---------------------+
+| change_id | salesperson_id | last_name | action | datestamp           |
++-----------+----------------+-----------+--------+---------------------+
+|         1 |           1002 | Serres    | UPDATE | 2020-09-22 14:12:07 |
++-----------+----------------+-----------+--------+---------------------+
+1 row in set (0.00 sec)

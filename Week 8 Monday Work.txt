@@ -1,0 +1,119 @@
+1)
+
+mysql> create user kylo identified by 'kylo';
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> create user rey identified by 'rey';
+Query OK, 0 rows affected (0.01 sec)
+
+2)
+
+mysql> alter table orders
+    -> add column owner varchar(35);
+Query OK, 0 rows affected (0.10 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> update orders
+    -> set owner = 'kylo'
+    -> where snum = 1001 or
+    -> snum = 1004 or
+    -> snum = 1007;
+Query OK, 0 rows affected (0.06 sec)
+Rows matched: 6  Changed: 6  Warnings: 0
+
+mysql> update orders
+    -> set owner = 'rey'
+    -> where snum = 1002 or
+    -> snum = 1003;
+Query OK, 4 rows affected (0.00 sec)
+Rows matched: 4  Changed: 4  Warnings: 0
+
+mysql> select * from orders;
++------+---------+------------+------+------+-------+
+| onum | amot    | odate      | cnum | snum | owner |
++------+---------+------------+------+------+-------+
+| 3000 | 1309.95 | 2000-10-06 | 2004 | 1002 | rey   |
+| 3001 |   18.69 | 2000-10-03 | 2008 | 1007 | kylo  |
+| 3002 | 1900.10 | 2000-10-03 | 2007 | 1004 | kylo  |
+| 3003 |  767.19 | 2000-10-03 | 2001 | 1001 | kylo  |
+| 3005 | 5160.45 | 2000-10-03 | 2003 | 1002 | rey   |
+| 3006 | 1098.16 | 2000-10-03 | 2008 | 1007 | kylo  |
+| 3007 |   75.75 | 2000-10-04 | 2004 | 1002 | rey   |
+| 3008 | 4723.00 | 2000-10-05 | 2006 | 1001 | kylo  |
+| 3009 | 1713.23 | 2000-10-04 | 2002 | 1003 | rey   |
+| 3011 | 9891.88 | 2000-10-06 | 2006 | 1001 | kylo  |
++------+---------+------------+------+------+-------+
+10 rows in set (0.00 sec)
+
+3)
+
+mysql> create view starwars as
+    -> select amot, cnum, snum from orders
+    -> where
+    -> orders.owner = substring_index(user(), '@', 1);
+Query OK, 0 rows affected (0.02 sec)
+
+4)
+
+mysql> grant select on starwars to kylo;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> grant select on starwars to rey;
+Query OK, 0 rows affected (0.00 sec)
+
+5)
+
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u kylo -p
+Enter password: ****
+
+mysql> use sales_db;
+Database changed
+mysql> show tables;
++--------------------+
+| Tables_in_sales_db |
++--------------------+
+| starwars           |
++--------------------+
+1 row in set (0.01 sec)
+
+mysql> select * from starwars;
++---------+------+------+
+| amot    | cnum | snum |
++---------+------+------+
+|   18.69 | 2008 | 1007 |
+| 1900.10 | 2007 | 1004 |
+|  767.19 | 2001 | 1001 |
+| 1098.16 | 2008 | 1007 |
+| 4723.00 | 2006 | 1001 |
+| 9891.88 | 2006 | 1001 |
++---------+------+------+
+6 rows in set (0.00 sec)
+
+mysql> exit
+
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u rey -p
+Enter password: ***
+
+mysql> use sales_db;
+
+mysql> show tables;
++--------------------+
+| Tables_in_sales_db |
++--------------------+
+| starwars           |
++--------------------+
+1 row in set (0.01 sec)
+
+mysql> select * from starwars;
++---------+------+------+
+| amot    | cnum | snum |
++---------+------+------+
+| 1309.95 | 2004 | 1002 |
+| 5160.45 | 2003 | 1002 |
+|   75.75 | 2004 | 1002 |
+| 1713.23 | 2002 | 1003 |
++---------+------+------+
+4 rows in set (0.00 sec)
+
+mysql> exit
+Bye

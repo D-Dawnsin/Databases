@@ -1,0 +1,127 @@
+1)
+
+mysql> select table_name, table_rows from tables where table_schema = "tarrytown_motel";
++--------------------------+------------+
+| TABLE_NAME               | TABLE_ROWS |
++--------------------------+------------+
+| employee                 |          7 |
+| guest_account            |         33 |
+| guest_account_individual |         43 |
+| guest_transaction        |         40 |
+| individual               |         42 |
+| maintenance_codes        |          9 |
+| room                     |         12 |
+| room_building            |          6 |
+| room_ind                 |         24 |
+| room_layout              |          5 |
+| room_maintenance         |         39 |
+| room_rent                |         40 |
+| room_unit                |         24 |
++--------------------------+------------+
+13 rows in set (0.00 sec)
+
+
+2)
+
+mysql> desc employee;
++--------------------------+--------------+------+-----+---------+-------+
+| Field                    | Type         | Null | Key | Default | Extra |
++--------------------------+--------------+------+-----+---------+-------+
+| INDIVIDUAL_ID            | int          | NO   | PRI | NULL    |       |
+| SUPERVISOR_INDIVIDUAL_ID | int          | YES  | MUL | NULL    |       |
+| EMPLOYEE_TAX_ID          | varchar(15)  | NO   |     | NULL    |       |
+| EMPLOYEE_JOB_CATEGORY    | char(1)      | NO   |     | NULL    |       |
+| EMPLOYEE_HOURLY_RATE     | decimal(5,2) | NO   |     | NULL    |       |
+| HIRE_DATE                | date         | NO   |     | NULL    |       |
+| TERMINATION_DATE         | date         | YES  |     | NULL    |       |
++--------------------------+--------------+------+-----+---------+-------+
+7 rows in set (0.00 sec)
+
+mysql> alter table employee
+    -> add column EMERGENCY_CONTACT_NAME tinytext
+    -> ;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column EMERGENCY_CONTACT_NUMBER tinytext;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc employee;
++--------------------------+--------------+------+-----+---------+-------+
+| Field                    | Type         | Null | Key | Default | Extra |
++--------------------------+--------------+------+-----+---------+-------+
+| INDIVIDUAL_ID            | int          | NO   | PRI | NULL    |       |
+| SUPERVISOR_INDIVIDUAL_ID | int          | YES  | MUL | NULL    |       |
+| EMPLOYEE_TAX_ID          | varchar(15)  | NO   |     | NULL    |       |
+| EMPLOYEE_JOB_CATEGORY    | char(1)      | NO   |     | NULL    |       |
+| EMPLOYEE_HOURLY_RATE     | decimal(5,2) | NO   |     | NULL    |       |
+| HIRE_DATE                | date         | NO   |     | NULL    |       |
+| TERMINATION_DATE         | date         | YES  |     | NULL    |       |
+| EMERGENCY_CONTACT_NAME   | tinytext     | YES  |     | NULL    |       |
+| EMERGENCY_CONTACT_NUMBER | tinytext     | YES  |     | NULL    |       |
++--------------------------+--------------+------+-----+---------+-------+
+9 rows in set (0.00 sec)
+
+mysql> select * from employee;
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+| INDIVIDUAL_ID | SUPERVISOR_INDIVIDUAL_ID | EMPLOYEE_TAX_ID | EMPLOYEE_JOB_CATEGORY | EMPLOYEE_HOURLY_RATE | HIRE_DATE  | TERMINATION_DATE | EMERGENCY_CONTACT_NAME | EMERGENCY_CONTACT_NUMBER |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+|             1 |                     NULL | 000-01-1234     | M                     |                50.00 | 2013-01-01 | NULL             | NULL                   | NULL                     |
+|             2 |                        1 | 000-02-8564     | C                     |                 9.75 | 2013-01-01 | 2013-06-01       | NULL                   | NULL                     |
+|             4 |                     3000 | 000-45-3456     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
+|            10 |                        1 | 000-57-8385     | C                     |                 9.75 | 2013-03-01 | NULL             | NULL                   | NULL                     |
+|            15 |                     3000 | 000-78-9876     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
+|          3000 |                        1 | 000-43-1234     | M                     |                50.00 | 2013-01-01 | NULL             | NULL                   | NULL                     |
+|          3001 |                     3000 | 000-45-5678     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+7 rows in set (0.00 sec)
+
+mysql> update employee
+    -> set EMERGENCY_CONTACT_NAME = "Darth Vader", EMERGENCY_CONTACT_NUMBER = "(312)555-1212"
+    -> where INDIVIDUAL_ID = 1;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> update employee
+    -> set EMERGENCY_CONTACT_NAME = "Kylo Ren", EMERGENCY_CONTACT_NUMBER = "(415)778-9584"
+    -> where INDIVIDUAL_ID = 2;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> update employee
+    -> set EMERGENCY_CONTACT_NAME = "Dawson Demien", EMERGENCY_CONTACT_NUMBER = "(219)464-5000"
+    -> where INDIVIDUAL_ID = 10;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from employee;
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+| INDIVIDUAL_ID | SUPERVISOR_INDIVIDUAL_ID | EMPLOYEE_TAX_ID | EMPLOYEE_JOB_CATEGORY | EMPLOYEE_HOURLY_RATE | HIRE_DATE  | TERMINATION_DATE | EMERGENCY_CONTACT_NAME | EMERGENCY_CONTACT_NUMBER |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+|             1 |                     NULL | 000-01-1234     | M                     |                50.00 | 2013-01-01 | NULL             | Darth Vader            | (312)555-1212            |
+|             2 |                        1 | 000-02-8564     | C                     |                 9.75 | 2013-01-01 | 2013-06-01       | Kylo Ren               | (415)778-9584            |
+|             4 |                     3000 | 000-45-3456     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
+|            10 |                        1 | 000-57-8385     | C                     |                 9.75 | 2013-03-01 | NULL             | Dawson Demien          | (219)464-5000            |
+|            15 |                     3000 | 000-78-9876     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
+|          3000 |                        1 | 000-43-1234     | M                     |                50.00 | 2013-01-01 | NULL             | NULL                   | NULL                     |
+|          3001 |                     3000 | 000-45-5678     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+
+7 rows in set (0.00 sec)
+
+
+3) 
+
+I think that it does not hurt to have the emergency contact information in the employee table. However, I do believe that one could better organize the data by making the emergency
+contact information its own table. The advantage of putting the emergency contact info into the employee table is that one does not have to compare two seperate tables to correlate
+a person with their emergency contact info. The disadvantages of this would be that you are making a table much wider and storing more data in one table. Weighing these consequences,
+I believe that making the emergency contact info its own table would be the best call for action. The reason for this is because you never want a table to get too wide because it can
+cause performance issues. Furthermore, even though you have to go between two table to correlate people with their info there are still relationships in play that help make the search 
+much easier. Plus this makes it easier if two or more employees have the same emergency contact info, then we dont have to duplicate their info and take up more space than needed.
+
+
+I have neither given or received, nor have I tolerated others' use of unauthroized aid.
+-Dawson Demien 
+
+

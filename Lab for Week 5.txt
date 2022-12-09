@@ -1,0 +1,500 @@
+
+1) 
+
+mysql> select individual.individual_given_name, guest_account_individual.guest_account_id from individual, guest_account_individual
+    -> where individual.individual_id = guest_account_individual.individual_id and
+    -> individual.individual_birth_date < '1963-01-01'
+    -> order by individual.individual_birth_date desc;
++-----------------------+------------------+
+| individual_given_name | guest_account_id |
++-----------------------+------------------+
+| Kazuhiro              |               17 |
+| Radek                 |                7 |
+| Elisabeth             |                7 |
+| Toc                   |               15 |
+| Yehuda                |              105 |
+| Karl                  |                4 |
+| Jennifer              |               10 |
+| Cong                  |               13 |
+| Chalten               |               22 |
+| Marius                |                4 |
+| Marko                 |               14 |
+| Tosh                  |                5 |
+| Waliy al Din          |               16 |
+| Sander                |               18 |
++-----------------------+------------------+
+14 rows in set (0.00 sec)
+
+
+
+
+
+
+
+
+2)
+
+I grouped everything by their names because even if one person had more than
+one transaction, it was always for the same room which costs the same amount.
+
+(< 1963) and (>1945) = between 57 and 75
+
+VIEW 1:
+
+mysql> create view old_people as
+    -> select individual.individual_given_name, guest_account_individual.guest_account_id
+    -> from individual, guest_account_individual
+    -> where individual.individual_birth_date < '1963-01-01' and
+    -> individual.individual_birth_date > '1945-01-01' and
+    -> individual.individual_id = guest_account_individual.individual_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from old_people;
++-----------------------+------------------+
+| individual_given_name | guest_account_id |
++-----------------------+------------------+
+| Marius                |                4 |
+| Karl                  |                4 |
+| Tosh                  |                5 |
+| Elisabeth             |                7 |
+| Radek                 |                7 |
+| Jennifer              |               10 |
+| Cong                  |               13 |
+| Marko                 |               14 |
+| Toc                   |               15 |
+| Waliy al Din          |               16 |
+| Kazuhiro              |               17 |
+| Sander                |               18 |
+| Chalten               |               22 |
+| Yehuda                |              105 |
++-----------------------+------------------+
+14 rows in set (0.01 sec)
+
+VIEW 2:
+
+mysql> create view oldies_transactions as
+    -> select old_people.individual_given_name, old_people.guest_account_id, guest_transaction.transaction_id
+    -> from old_people, guest_transaction
+    -> where old_people.guest_account_id = guest_transaction.guest_account_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from oldies_transactions
+    -> group by individual_given_name;
++-----------------------+------------------+----------------+
+| individual_given_name | guest_account_id | transaction_id |
++-----------------------+------------------+----------------+
+| Marius                |                4 |              7 |
+| Karl                  |                4 |              7 |
+| Tosh                  |                5 |              6 |
+| Elisabeth             |                7 |              4 |
+| Radek                 |                7 |              4 |
+| Jennifer              |               10 |              1 |
+| Chalten               |               22 |             12 |
+| Yehuda                |              105 |             20 |
++-----------------------+------------------+----------------+
+8 rows in set (0.00 sec)
+
+
+VIEW 3:
+
+mysql> create view oldies_room as
+    -> select oldies_transactions.individual_given_name, oldies_transactions.transaction_id, room_rent.room_id
+    -> from oldies_transactions, room_rent
+    -> where oldies_transactions.transaction_id = room_rent.transaction_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from oldies_room
+    -> group by individual_given_name;
++-----------------------+----------------+---------+
+| individual_given_name | transaction_id | room_id |
++-----------------------+----------------+---------+
+| Marius                |              7 |       4 |
+| Karl                  |              7 |       4 |
+| Tosh                  |              6 |       4 |
+| Elisabeth             |              4 |       3 |
+| Radek                 |              4 |       3 |
+| Jennifer              |              1 |       1 |
+| Chalten               |             12 |       7 |
+| Yehuda                |             20 |      11 |
++-----------------------+----------------+---------+
+8 rows in set (0.00 sec)
+
+JOIN:
+
+mysql> select oldies_room.individual_given_name, room.room_name, room.price_night_wkday, room.price_night_wkend
+    -> from oldies_room
+    -> left join room on
+    -> oldies_room.room_id = room.room_id
+    -> group by oldies_room.individual_given_name
+    -> order by room.price_night_wkday asc;
++-----------------------+-----------+-------------------+-------------------+
+| individual_given_name | room_name | price_night_wkday | price_night_wkend |
++-----------------------+-----------+-------------------+-------------------+
+| Jennifer              | Pilgrim   |             12.00 |            150.00 |
+| Yehuda                | Pilgrim   |             12.00 |            150.00 |
+| Chalten               | Mayflower |             13.00 |            150.00 |
+| Elisabeth             | Jonestown |             15.00 |            150.00 |
+| Radek                 | Jonestown |             15.00 |            150.00 |
+| Marius                | Plymouth  |             16.00 |            150.00 |
+| Karl                  | Plymouth  |             16.00 |            150.00 |
+| Tosh                  | Plymouth  |             16.00 |            150.00 |
++-----------------------+-----------+-------------------+-------------------+
+8 rows in set (0.00 sec)
+
+
+
+
+
+
+
+
+
+
+
+3)
+
+I did not group any of these by their names because there are a lot more people
+and it is harder to check if even with more than one transaction if it was
+made for the same room each time.
+
+For the Join I will show it with and without the group if it makes it look more organized for you.
+
+VIEW 1:
+
+mysql> create view people as
+    -> select individual.individual_given_name, individual.individual_birth_date, guest_account_individual.guest_account_id
+    -> from individual, guest_account_individual
+    -> where individual.individual_id = guest_account_individual.individual_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from people;
++-----------------------+-----------------------+------------------+
+| individual_given_name | individual_birth_date | guest_account_id |
++-----------------------+-----------------------+------------------+
+| Cong                  | 1970-07-04            |                1 |
+| Yamila                | 1968-05-05            |                2 |
+| Tobias                | 1981-09-27            |                3 |
+| Mavise                | 1983-08-26            |                3 |
+| Marius                | 1951-06-20            |                4 |
+| Karl                  | 1953-12-15            |                4 |
+| Glen                  | 1980-04-16            |                3 |
+| Glen                  | 1980-04-16            |                4 |
+| Tosh                  | 1949-03-16            |                5 |
+| Filip                 | 1981-02-28            |                6 |
+| Elisabeth             | 1959-08-13            |                7 |
+| Radek                 | 1960-04-16            |                7 |
+| Yoshihide             | 1994-06-17            |                7 |
+| Ananias               | 1974-11-15            |                8 |
+| Tim                   | 1974-12-21            |                8 |
+| Meisie                | 1976-05-14            |                9 |
+| Jennifer              | 1953-07-16            |               10 |
+| Amarante              | 1988-08-01            |               11 |
+| Shizuru               | 1987-08-28            |               12 |
+| Cong                  | 1952-11-27            |               13 |
+| Marko                 | 1950-09-05            |               14 |
+| Toc                   | 1956-05-14            |               15 |
+| Waliy al Din          | 1946-11-28            |               16 |
+| Kazuhiro              | 1961-07-28            |               17 |
+| Sander                | 1945-04-21            |               18 |
+| irena                 | 1986-09-29            |               20 |
+| Dana                  | 1976-04-07            |               20 |
+| Vera                  | 1966-04-14            |               21 |
+| Chalten               | 1952-02-06            |               22 |
+| Buthaynah             | 1966-12-22            |               23 |
+| Melusina              | 1963-06-26            |               24 |
+| Wilmer                | 1979-08-17            |              100 |
+| Fiona                 | 1979-08-24            |              101 |
+| Agaton                | 1970-01-09            |              102 |
+| Douglas               | 1970-07-25            |              103 |
+| Falah                 | 1981-08-25            |              104 |
+| Naila                 | 1988-05-25            |              104 |
+| Kaseeb                | 2000-05-25            |              104 |
+| Yehuda                | 1956-04-24            |              105 |
+| Veda                  | 1993-05-03            |              106 |
+| Selah                 | 1995-05-05            |              107 |
+| Jessica               | 1971-06-06            |              108 |
+| Langston              | 1972-06-08            |              108 |
++-----------------------+-----------------------+------------------+
+43 rows in set (0.00 sec)
+
+VIEW 2:
+
+mysql> create view people_transactions as
+    -> select people.individual_given_name, people.individual_birth_date, people.guest_account_id, guest_transaction.transaction_id
+    -> from people, guest_transaction
+    -> where people.guest_account_id = guest_transaction.guest_account_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from people_transactions;
++-----------------------+-----------------------+------------------+----------------+
+| individual_given_name | individual_birth_date | guest_account_id | transaction_id |
++-----------------------+-----------------------+------------------+----------------+
+| Yamila                | 1968-05-05            |                2 |              9 |
+| Yamila                | 1968-05-05            |                2 |             29 |
+| Tobias                | 1981-09-27            |                3 |              8 |
+| Tobias                | 1981-09-27            |                3 |             28 |
+| Mavise                | 1983-08-26            |                3 |              8 |
+| Mavise                | 1983-08-26            |                3 |             28 |
+| Marius                | 1951-06-20            |                4 |              7 |
+| Marius                | 1951-06-20            |                4 |             27 |
+| Karl                  | 1953-12-15            |                4 |              7 |
+| Karl                  | 1953-12-15            |                4 |             27 |
+| Glen                  | 1980-04-16            |                3 |              8 |
+| Glen                  | 1980-04-16            |                3 |             28 |
+| Glen                  | 1980-04-16            |                4 |              7 |
+| Glen                  | 1980-04-16            |                4 |             27 |
+| Tosh                  | 1949-03-16            |                5 |              6 |
+| Tosh                  | 1949-03-16            |                5 |             26 |
+| Elisabeth             | 1959-08-13            |                7 |              4 |
+| Elisabeth             | 1959-08-13            |                7 |             24 |
+| Radek                 | 1960-04-16            |                7 |              4 |
+| Radek                 | 1960-04-16            |                7 |             24 |
+| Yoshihide             | 1994-06-17            |                7 |              4 |
+| Yoshihide             | 1994-06-17            |                7 |             24 |
+| Ananias               | 1974-11-15            |                8 |              3 |
+| Ananias               | 1974-11-15            |                8 |             23 |
+| Tim                   | 1974-12-21            |                8 |              3 |
+| Tim                   | 1974-12-21            |                8 |             23 |
+| Meisie                | 1976-05-14            |                9 |              2 |
+| Meisie                | 1976-05-14            |                9 |             22 |
+| Jennifer              | 1953-07-16            |               10 |              1 |
+| Jennifer              | 1953-07-16            |               10 |             21 |
+| Shizuru               | 1987-08-28            |               12 |              5 |
+| Shizuru               | 1987-08-28            |               12 |             25 |
+| irena                 | 1986-09-29            |               20 |             10 |
+| irena                 | 1986-09-29            |               20 |             30 |
+| Dana                  | 1976-04-07            |               20 |             10 |
+| Dana                  | 1976-04-07            |               20 |             30 |
+| Vera                  | 1966-04-14            |               21 |             11 |
+| Vera                  | 1966-04-14            |               21 |             31 |
+| Chalten               | 1952-02-06            |               22 |             12 |
+| Chalten               | 1952-02-06            |               22 |             32 |
+| Buthaynah             | 1966-12-22            |               23 |             13 |
+| Buthaynah             | 1966-12-22            |               23 |             33 |
+| Melusina              | 1963-06-26            |               24 |             14 |
+| Melusina              | 1963-06-26            |               24 |             34 |
+| Wilmer                | 1979-08-17            |              100 |             15 |
+| Wilmer                | 1979-08-17            |              100 |             35 |
+| Fiona                 | 1979-08-24            |              101 |             16 |
+| Fiona                 | 1979-08-24            |              101 |             36 |
+| Agaton                | 1970-01-09            |              102 |             17 |
+| Agaton                | 1970-01-09            |              102 |             37 |
+| Douglas               | 1970-07-25            |              103 |             18 |
+| Douglas               | 1970-07-25            |              103 |             38 |
+| Falah                 | 1981-08-25            |              104 |             19 |
+| Falah                 | 1981-08-25            |              104 |             39 |
+| Naila                 | 1988-05-25            |              104 |             19 |
+| Naila                 | 1988-05-25            |              104 |             39 |
+| Kaseeb                | 2000-05-25            |              104 |             19 |
+| Kaseeb                | 2000-05-25            |              104 |             39 |
+| Yehuda                | 1956-04-24            |              105 |             20 |
+| Yehuda                | 1956-04-24            |              105 |             40 |
++-----------------------+-----------------------+------------------+----------------+
+60 rows in set (0.00 sec)
+
+VIEW 3:
+
+mysql> create view people_room as
+    -> select people_transactions.individual_given_name, people_transactions.individual_birth_date, people_transactions.transaction_id, room_rent.room_id
+    -> from people_transactions, room_rent
+    -> where people_transactions.transaction_id = room_rent.transaction_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from people_room;
++-----------------------+-----------------------+----------------+---------+
+| individual_given_name | individual_birth_date | transaction_id | room_id |
++-----------------------+-----------------------+----------------+---------+
+| Yamila                | 1968-05-05            |              9 |       5 |
+| Yamila                | 1968-05-05            |             29 |       5 |
+| Tobias                | 1981-09-27            |              8 |       5 |
+| Tobias                | 1981-09-27            |             28 |       5 |
+| Mavise                | 1983-08-26            |              8 |       5 |
+| Mavise                | 1983-08-26            |             28 |       5 |
+| Marius                | 1951-06-20            |              7 |       4 |
+| Marius                | 1951-06-20            |             27 |       4 |
+| Karl                  | 1953-12-15            |              7 |       4 |
+| Karl                  | 1953-12-15            |             27 |       4 |
+| Glen                  | 1980-04-16            |              8 |       5 |
+| Glen                  | 1980-04-16            |             28 |       5 |
+| Glen                  | 1980-04-16            |              7 |       4 |
+| Glen                  | 1980-04-16            |             27 |       4 |
+| Tosh                  | 1949-03-16            |              6 |       4 |
+| Tosh                  | 1949-03-16            |             26 |       4 |
+| Elisabeth             | 1959-08-13            |              4 |       3 |
+| Elisabeth             | 1959-08-13            |             24 |       3 |
+| Radek                 | 1960-04-16            |              4 |       3 |
+| Radek                 | 1960-04-16            |             24 |       3 |
+| Yoshihide             | 1994-06-17            |              4 |       3 |
+| Yoshihide             | 1994-06-17            |             24 |       3 |
+| Ananias               | 1974-11-15            |              3 |       2 |
+| Ananias               | 1974-11-15            |             23 |       2 |
+| Tim                   | 1974-12-21            |              3 |       2 |
+| Tim                   | 1974-12-21            |             23 |       2 |
+| Meisie                | 1976-05-14            |              2 |       1 |
+| Meisie                | 1976-05-14            |             22 |       1 |
+| Jennifer              | 1953-07-16            |              1 |       1 |
+| Jennifer              | 1953-07-16            |             21 |       1 |
+| Shizuru               | 1987-08-28            |              5 |       3 |
+| Shizuru               | 1987-08-28            |             25 |       3 |
+| irena                 | 1986-09-29            |             10 |       6 |
+| irena                 | 1986-09-29            |             30 |       6 |
+| Dana                  | 1976-04-07            |             10 |       6 |
+| Dana                  | 1976-04-07            |             30 |       6 |
+| Vera                  | 1966-04-14            |             11 |       7 |
+| Vera                  | 1966-04-14            |             31 |       7 |
+| Chalten               | 1952-02-06            |             12 |       7 |
+| Chalten               | 1952-02-06            |             32 |       7 |
+| Buthaynah             | 1966-12-22            |             13 |       8 |
+| Buthaynah             | 1966-12-22            |             33 |       8 |
+| Melusina              | 1963-06-26            |             14 |       8 |
+| Melusina              | 1963-06-26            |             34 |       8 |
+| Wilmer                | 1979-08-17            |             15 |       9 |
+| Wilmer                | 1979-08-17            |             35 |       9 |
+| Fiona                 | 1979-08-24            |             16 |       9 |
+| Fiona                 | 1979-08-24            |             36 |       9 |
+| Agaton                | 1970-01-09            |             17 |      10 |
+| Agaton                | 1970-01-09            |             37 |      10 |
+| Douglas               | 1970-07-25            |             18 |      10 |
+| Douglas               | 1970-07-25            |             38 |      10 |
+| Falah                 | 1981-08-25            |             19 |      11 |
+| Falah                 | 1981-08-25            |             39 |      11 |
+| Naila                 | 1988-05-25            |             19 |      11 |
+| Naila                 | 1988-05-25            |             39 |      11 |
+| Kaseeb                | 2000-05-25            |             19 |      11 |
+| Kaseeb                | 2000-05-25            |             39 |      11 |
+| Yehuda                | 1956-04-24            |             20 |      11 |
+| Yehuda                | 1956-04-24            |             40 |      11 |
++-----------------------+-----------------------+----------------+---------+
+60 rows in set (0.00 sec)
+
+
+JOIN:
+
+mysql> select people_room.individual_given_name, people_room.individual_birth_date, room.room_name, room.price_night_wkday, room.price_night_wkend
+    -> from people_room, room
+    -> where people_room.room_id = room.room_id
+    -> order by people_room.individual_birth_date asc;
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+| individual_given_name | individual_birth_date | room_name     | price_night_wkday | price_night_wkend |
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+| Tosh                  | 1949-03-16            | Plymouth      |             16.00 |            150.00 |
+| Tosh                  | 1949-03-16            | Plymouth      |             16.00 |            150.00 |
+| Marius                | 1951-06-20            | Plymouth      |             16.00 |            150.00 |
+| Marius                | 1951-06-20            | Plymouth      |             16.00 |            150.00 |
+| Chalten               | 1952-02-06            | Mayflower     |             13.00 |            150.00 |
+| Chalten               | 1952-02-06            | Mayflower     |             13.00 |            150.00 |
+| Jennifer              | 1953-07-16            | Pilgrim       |             12.00 |            150.00 |
+| Jennifer              | 1953-07-16            | Pilgrim       |             12.00 |            150.00 |
+| Karl                  | 1953-12-15            | Plymouth      |             16.00 |            150.00 |
+| Karl                  | 1953-12-15            | Plymouth      |             16.00 |            150.00 |
+| Yehuda                | 1956-04-24            | Pilgrim       |             12.00 |            150.00 |
+| Yehuda                | 1956-04-24            | Pilgrim       |             12.00 |            150.00 |
+| Elisabeth             | 1959-08-13            | Jonestown     |             15.00 |            150.00 |
+| Elisabeth             | 1959-08-13            | Jonestown     |             15.00 |            150.00 |
+| Radek                 | 1960-04-16            | Jonestown     |             15.00 |            150.00 |
+| Radek                 | 1960-04-16            | Jonestown     |             15.00 |            150.00 |
+| Melusina              | 1963-06-26            | Jonestown     |             15.00 |            150.00 |
+| Melusina              | 1963-06-26            | Jonestown     |             15.00 |            150.00 |
+| Vera                  | 1966-04-14            | Mayflower     |             13.00 |            150.00 |
+| Vera                  | 1966-04-14            | Mayflower     |             13.00 |            150.00 |
+| Buthaynah             | 1966-12-22            | Jonestown     |             15.00 |            150.00 |
+| Buthaynah             | 1966-12-22            | Jonestown     |             15.00 |            150.00 |
+| Yamila                | 1968-05-05            | Massachusetts |             20.00 |            150.00 |
+| Yamila                | 1968-05-05            | Massachusetts |             20.00 |            150.00 |
+| Agaton                | 1970-01-09            | Massachusetts |             20.00 |            150.00 |
+| Agaton                | 1970-01-09            | Massachusetts |             20.00 |            150.00 |
+| Douglas               | 1970-07-25            | Massachusetts |             20.00 |            150.00 |
+| Douglas               | 1970-07-25            | Massachusetts |             20.00 |            150.00 |
+| Ananias               | 1974-11-15            | Mayflower     |             13.00 |            150.00 |
+| Ananias               | 1974-11-15            | Mayflower     |             13.00 |            150.00 |
+| Tim                   | 1974-12-21            | Mayflower     |             13.00 |            150.00 |
+| Tim                   | 1974-12-21            | Mayflower     |             13.00 |            150.00 |
+| Dana                  | 1976-04-07            | Pilgrim       |             12.00 |            150.00 |
+| Dana                  | 1976-04-07            | Pilgrim       |             12.00 |            150.00 |
+| Meisie                | 1976-05-14            | Pilgrim       |             12.00 |            150.00 |
+| Meisie                | 1976-05-14            | Pilgrim       |             12.00 |            150.00 |
+| Wilmer                | 1979-08-17            | Plymouth      |             16.00 |            150.00 |
+| Wilmer                | 1979-08-17            | Plymouth      |             16.00 |            150.00 |
+| Fiona                 | 1979-08-24            | Plymouth      |             16.00 |            150.00 |
+| Fiona                 | 1979-08-24            | Plymouth      |             16.00 |            150.00 |
+| Glen                  | 1980-04-16            | Plymouth      |             16.00 |            150.00 |
+| Glen                  | 1980-04-16            | Massachusetts |             20.00 |            150.00 |
+| Glen                  | 1980-04-16            | Plymouth      |             16.00 |            150.00 |
+| Glen                  | 1980-04-16            | Massachusetts |             20.00 |            150.00 |
+| Falah                 | 1981-08-25            | Pilgrim       |             12.00 |            150.00 |
+| Falah                 | 1981-08-25            | Pilgrim       |             12.00 |            150.00 |
+| Tobias                | 1981-09-27            | Massachusetts |             20.00 |            150.00 |
+| Tobias                | 1981-09-27            | Massachusetts |             20.00 |            150.00 |
+| Mavise                | 1983-08-26            | Massachusetts |             20.00 |            150.00 |
+| Mavise                | 1983-08-26            | Massachusetts |             20.00 |            150.00 |
+| irena                 | 1986-09-29            | Pilgrim       |             12.00 |            150.00 |
+| irena                 | 1986-09-29            | Pilgrim       |             12.00 |            150.00 |
+| Shizuru               | 1987-08-28            | Jonestown     |             15.00 |            150.00 |
+| Shizuru               | 1987-08-28            | Jonestown     |             15.00 |            150.00 |
+| Naila                 | 1988-05-25            | Pilgrim       |             12.00 |            150.00 |
+| Naila                 | 1988-05-25            | Pilgrim       |             12.00 |            150.00 |
+| Yoshihide             | 1994-06-17            | Jonestown     |             15.00 |            150.00 |
+| Yoshihide             | 1994-06-17            | Jonestown     |             15.00 |            150.00 |
+| Kaseeb                | 2000-05-25            | Pilgrim       |             12.00 |            150.00 |
+| Kaseeb                | 2000-05-25            | Pilgrim       |             12.00 |            150.00 |
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+60 rows in set (0.00 sec)
+
+This is the same thing but with it grouped by the people:
+
+mysql> select people_room.individual_given_name, people_room.individual_birth_date, room.room_name, room.price_night_wkday, room.price_night_wkend
+    -> from people_room, room
+    -> where people_room.room_id = room.room_id
+    -> group by people_room.individual_given_name
+    -> order by people_room.individual_birth_date asc;
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+| individual_given_name | individual_birth_date | room_name     | price_night_wkday | price_night_wkend |
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+| Tosh                  | 1949-03-16            | Plymouth      |             16.00 |            150.00 |
+| Marius                | 1951-06-20            | Plymouth      |             16.00 |            150.00 |
+| Chalten               | 1952-02-06            | Mayflower     |             13.00 |            150.00 |
+| Jennifer              | 1953-07-16            | Pilgrim       |             12.00 |            150.00 |
+| Karl                  | 1953-12-15            | Plymouth      |             16.00 |            150.00 |
+| Yehuda                | 1956-04-24            | Pilgrim       |             12.00 |            150.00 |
+| Elisabeth             | 1959-08-13            | Jonestown     |             15.00 |            150.00 |
+| Radek                 | 1960-04-16            | Jonestown     |             15.00 |            150.00 |
+| Melusina              | 1963-06-26            | Jonestown     |             15.00 |            150.00 |
+| Vera                  | 1966-04-14            | Mayflower     |             13.00 |            150.00 |
+| Buthaynah             | 1966-12-22            | Jonestown     |             15.00 |            150.00 |
+| Yamila                | 1968-05-05            | Massachusetts |             20.00 |            150.00 |
+| Agaton                | 1970-01-09            | Massachusetts |             20.00 |            150.00 |
+| Douglas               | 1970-07-25            | Massachusetts |             20.00 |            150.00 |
+| Ananias               | 1974-11-15            | Mayflower     |             13.00 |            150.00 |
+| Tim                   | 1974-12-21            | Mayflower     |             13.00 |            150.00 |
+| Dana                  | 1976-04-07            | Pilgrim       |             12.00 |            150.00 |
+| Meisie                | 1976-05-14            | Pilgrim       |             12.00 |            150.00 |
+| Wilmer                | 1979-08-17            | Plymouth      |             16.00 |            150.00 |
+| Fiona                 | 1979-08-24            | Plymouth      |             16.00 |            150.00 |
+| Glen                  | 1980-04-16            | Plymouth      |             16.00 |            150.00 |
+| Falah                 | 1981-08-25            | Pilgrim       |             12.00 |            150.00 |
+| Tobias                | 1981-09-27            | Massachusetts |             20.00 |            150.00 |
+| Mavise                | 1983-08-26            | Massachusetts |             20.00 |            150.00 |
+| irena                 | 1986-09-29            | Pilgrim       |             12.00 |            150.00 |
+| Shizuru               | 1987-08-28            | Jonestown     |             15.00 |            150.00 |
+| Naila                 | 1988-05-25            | Pilgrim       |             12.00 |            150.00 |
+| Yoshihide             | 1994-06-17            | Jonestown     |             15.00 |            150.00 |
+| Kaseeb                | 2000-05-25            | Pilgrim       |             12.00 |            150.00 |
++-----------------------+-----------------------+---------------+-------------------+-------------------+
+29 rows in set (0.00 sec)
+
+
+
+
+
+
+
+
+
+4)
+
+mysql> I have neither given or received, nor have I tolerated others' use of unauthorized aid--
+    '> Dawson Demien
+
+
+
+ 

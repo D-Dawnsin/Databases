@@ -1,0 +1,165 @@
+1. Your new manager wants to know how many customers use your services or purchase your products, every month. She needs to know the month with the most transactions,
+   the least transactions, and the average transactions per month. (2 points)
+
+2. Create a standing report (i.e. a View) that shows average monthly sales per product or service category (for example, action films or stoves or cardio classes or 
+   long-sleeved shirts).  Ensure that all numbers are rounded to two decimals and that the column headings are simple and easily understandable (i.e. use aliases). (3 points)
+
+3. Find the date(s) when an employee who was terminated was actually still conducting transactions for your business. (3 points)
+
+
+1)
+
+This shows the least and most transactions per month:
+
+mysql> select transaction_date, count(transaction_id) from guest_transaction
+    -> group by month(transaction_date) order by month(transaction_date);
++------------------+-----------------------+
+| transaction_date | count(transaction_id) |
++------------------+-----------------------+
+| 2014-10-31       |                     6 |
+| 2014-11-01       |                    15 |
+| 2014-12-05       |                    19 |
++------------------+-----------------------+
+3 rows in set (0.00 sec)
+
+This shows the amount of transactions per each day in the month (this helps get the average):
+
+mysql> select transaction_date, count(transaction_id) from guest_transaction
+    -> group by transaction_date order by transaction_date;
++------------------+-----------------------+
+| transaction_date | count(transaction_id) |
++------------------+-----------------------+
+| 2014-10-29       |                     3 |
+| 2014-10-31       |                     3 |
+| 2014-11-01       |                     6 |
+| 2014-11-03       |                     2 |
+| 2014-11-05       |                     2 |
+| 2014-11-10       |                     2 |
+| 2014-11-15       |                     2 |
+| 2014-11-29       |                     1 |
+| 2014-12-01       |                     8 |
+| 2014-12-03       |                     4 |
+| 2014-12-05       |                     5 |
+| 2014-12-10       |                     1 |
+| 2014-12-15       |                     1 |
++------------------+-----------------------+
+13 rows in set (0.00 sec)
+
+I really was not sure how to show all of the information and the average so I did the math here (sorry):
+
+For the month of Octobor has the Average: (6/2) = 3
+For the month of November has the Average: (15/6) = 2.5 
+For the month of December has the Average: (19/5) = 3.8
+
+The month with the most transactions = December
+The month with the least transactions = Octoboer
+
+
+
+2)
+
+This view is to show the sales of each partiular room id/ room style throughout the months:
+
+mysql> create view room_report as
+    -> select room_rent.room_id, room.room_style, round(avg(room_rent.rent_amount),2) as "Average Sales"
+    -> , room_rent.paid_date from room_rent, room
+    -> where room_rent.room_id = room.room_id
+    -> group by room_rent.paid_date order by room_rent.paid_date;
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> select * from room_report;
++---------+------------+--------------+------------+
+| room_id | room_style | Average Sales| paid_date  |
++---------+------------+--------------+------------+
+|      10 | apt3q      |       758.33 | 2014-10-29 |
+|       8 | 1br1k      |       750.00 | 2014-10-31 |
+|       3 | 1br1k      |       693.33 | 2014-11-01 |
+|      11 | 1br2q      |       675.00 | 2014-11-03 |
+|       1 | 1br2q      |       687.50 | 2014-11-05 |
+|       3 | 1br1k      |       733.50 | 2014-11-10 |
+|       2 | ste2q      |       687.50 | 2014-11-15 |
+|      10 | apt3q      |       775.00 | 2014-11-29 |
+|       3 | 1br1k      |       684.63 | 2014-12-01 |
+|      11 | 1br2q      |       712.50 | 2014-12-03 |
+|       3 | 1br1k      |       715.00 | 2014-12-05 |
+|       9 | ste1k      |       800.00 | 2014-12-10 |
+|       9 | ste1k      |       775.00 | 2014-12-15 |
++---------+------------+--------------+------------+
+13 rows in set (0.00 sec)
+
+This view is to show the average monthly sales in general:
+
+mysql> create view month_report as
+    -> select round(avg(room_rent.rent_amount),2) as "Average Sales"
+    -> , room_rent.paid_date from room_rent, room
+    -> group by month(room_rent.paid_date) order by month(room_rent.paid_date);
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> select * from month_report;
++--------------+------------+
+| Average Sales| paid_date  |
++--------------+------------+
+|       754.17 | 2014-10-31 |
+|       700.13 | 2014-11-01 |
+|       709.32 | 2014-12-05 |
++--------------+------------+
+3 rows in set (0.00 sec)
+
+
+
+
+3)
+
+Just to show you which employees are no longer working and what date they finished working:
+
+mysql> select individual_id, termination_date from employee
+    -> where termination_date is not null;
++---------------+------------------+
+| individual_id | termination_date |
++---------------+------------------+
+|             2 | 2013-06-01       |
++---------------+------------------+
+1 row in set (0.00 sec)
+
+
+Shows what question 3 asks for (dates of transactions from an employee who no longer works there):
+
+mysql> select employee_individual_id, transaction_date from guest_transaction
+    -> where transaction_date > (select termination_date from employee where termination_date is not null) and
+    -> employee_individual_id = (select individual_id from employee where termination_date is not null);
++------------------------+------------------+
+| employee_individual_id | transaction_date |
++------------------------+------------------+
+|                      2 | 2014-11-15       |
+|                      2 | 2014-11-01       |
+|                      2 | 2014-10-31       |
++------------------------+------------------+
+3 rows in set (0.06 sec)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

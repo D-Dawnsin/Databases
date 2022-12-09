@@ -1,0 +1,23 @@
+1)
+
+{"theaterId" : 1110}
+
+address:Object
+street1:"332-A Robert Smalls Pkwy"
+city:"Beaufort"
+state:"SC"
+zipcode:"29906"
+
+
+
+
+2)
+
+{"theaterId" : { $lt : 1000}}
+
+
+
+
+3)
+
+{ "location.address.state" : "IN" }

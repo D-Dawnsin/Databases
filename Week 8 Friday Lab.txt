@@ -1,0 +1,181 @@
+1) Build a MySQL user called coranova with a password. This is the login/ password combination that Coranova's 
+RDBMS will use to log into your MySQL instance. (2 points)
+
+2) Add an OWNER column to the PERSON/ IND/ … table in your schema.  Coranova's RDBMS will need access only to the 
+users under 55. (2 points)
+
+3) Build a view called CORA_VIEW in which the RDBMS from Coranova can access only first names, last names, and birthdates 
+of your users under 55 (you have already done this work in a previous assignment; reuse those parts of your existing code).  
+Use the SUBSTRING_INDEX(str, delim, count) function to implement view restrictions. (2 points)
+
+4) Configure the coranova account's permissions to see only the view it is allowed to see, with the users it is 
+allowed to see. (2 points)
+
+5) Test the coranova account and demonstrate that Coranova's RDBMS will be able to see only the CORA_VIEW 
+and ONLY the users under 55. (2 points)
+
+
+
+
+
+1)
+
+mysql> create user coranova identified by 'coranova';
+Query OK, 0 rows affected (0.07 sec)
+
+
+2)
+
+mysql> alter table individual
+    -> add column OWNER varchar(30);
+Query OK, 0 rows affected (0.24 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc individual;
++-------------------------------+--------------+------+-----+---------+-------+
+| Field                         | Type         | Null | Key | Default | Extra |
++-------------------------------+--------------+------+-----+---------+-------+
+| INDIVIDUAL_ID                 | int          | NO   | PRI | NULL    |       |
+| INDIVIDUAL_GIVEN_NAME         | varchar(25)  | NO   |     | NULL    |       |
+| INDIVIDUAL_MIDDLE_NAME        | varchar(25)  | YES  |     | NULL    |       |
+| INDIVIDUAL_FAMILY_NAME        | varchar(25)  | NO   |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_1          | varchar(100) | YES  |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_2          | varchar(100) | YES  |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_CITY       | varchar(40)  | YES  |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_STATE_PROV | char(2)      | YES  |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_ZIP        | varchar(10)  | YES  |     | NULL    |       |
+| INDIVIDUAL_ADDRESS_COUNTRY    | char(2)      | YES  |     | NULL    |       |
+| INDIVIDUAL_PHONE              | varchar(15)  | YES  |     | NULL    |       |
+| INDIVIDUAL_BIRTH_DATE         | date         | YES  |     | NULL    |       |
+| INDIVIDUAL_DEATH_DATE         | date         | YES  |     | NULL    |       |
+| EMAIL_ADDRESS                 | varchar(50)  | YES  |     | NULL    |       |
+| OWNER                         | varchar(30)  | YES  |     | NULL    |       |
++-------------------------------+--------------+------+-----+---------+-------+
+15 rows in set (0.01 sec)
+
+mysql> update individual
+    -> set owner = 'coranova'
+    -> where year(individual_birth_date) > 1965;
+Query OK, 27 rows affected (0.01 sec)
+Rows matched: 27  Changed: 27  Warnings: 0
+
+mysql> select * from individual;
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+---------------+----------+
+| INDIVIDUAL_ID | INDIVIDUAL_GIVEN_NAME | INDIVIDUAL_MIDDLE_NAME | INDIVIDUAL_FAMILY_NAME | INDIVIDUAL_ADDRESS_1      | INDIVIDUAL_ADDRESS_2 | INDIVIDUAL_ADDRESS_CITY | INDIVIDUAL_ADDRESS_STATE_PROV | INDIVIDUAL_ADDRESS_ZIP | INDIVIDUAL_ADDRESS_COUNTRY | INDIVIDUAL_PHONE | INDIVIDUAL_BIRTH_DATE | INDIVIDUAL_DEATH_DATE | EMAIL_ADDRESS | OWNER    |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+---------------+----------+
+|             1 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1970-07-04            | NULL                  | NULL          | coranova |
+|             2 | Yamila                | H                      | Concepcion             | 4088 Briarwood Road       | NULL                 | Springfield             | MO                            | 65804                  | US                         | 417 885 2573     | 1968-05-05            | NULL                  | NULL          | coranova |
+|             3 | Tobias                | U                      | Holtzmann              | 760 Langtown Road         | NULL                 | Zwingle                 | iA                            | 52079                  | US                         | 563 686 8388     | 1981-09-27            | NULL                  | NULL          | coranova |
+|             4 | Mavise                | C                      | Gagnon                 | 3524 Goldie Lane          | NULL                 | Middletown              | OH                            | 45044                  | US                         | 513 420 8726     | 1983-08-26            | NULL                  | NULL          | coranova |
+|             5 | Marius                | L                      | Schultz                | 2533 Alpaca Way           | NULL                 | Orange                  | CA                            | 92632                  | US                         | 714 771 0603     | 1951-06-20            | NULL                  | NULL          | NULL     |
+|             6 | Karl                  | S                      | Pettersson             | 4478 Collins Street       | NULL                 | Genesee                 | PA                            | 16923                  | US                         | 814 228 3988     | 1953-12-15            | NULL                  | NULL          | NULL     |
+|             7 | Glen                  | A                      | Lavigne                | 2902 Libby Street         | NULL                 | Gardena                 | CA                            | 90247                  | US                         | 310 327 9257     | 1980-04-16            | NULL                  | NULL          | coranova |
+|             8 | Tosh                  | C                      | Jacobsen               | 171 B Street              | NULL                 | Shoreview               | MN                            | 55126                  | US                         | 651 486 3207     | 1949-03-16            | 2013-03-30            | NULL          | NULL     |
+|             9 | Filip                 | D                      | Krusina                | 1547 Callison Lane        | NULL                 | WiLiangton              | DE                            | 19801                  | US                         | 302 384 5469     | 1981-02-28            | NULL                  | NULL          | coranova |
+|            10 | Elisabeth             | W                      | Kaneshiro              | 1574 Elk Street           | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 949 606 3845     | 1959-08-13            | NULL                  | NULL          | NULL     |
+|            11 | Radek                 | L                      | Zouhar                 | 2706 Williams Mine Road   | NULL                 | Gambell                 | AK                            | 99742                  | US                         | 907 985 1060     | 1960-04-16            | NULL                  | NULL          | NULL     |
+|            12 | Yoshihide             | S                      | Ono                    | 943 Sumner Street         | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 310 620 8198     | 1994-06-17            | NULL                  | NULL          | coranova |
+|            13 | Ananias               | M                      | Sauceda                | 541 Christie Way          | NULL                 | Framingham              | MA                            | 1702                   | US                         | 978 831 8609     | 1974-11-15            | NULL                  | NULL          | coranova |
+|            14 | Tim                   | M                      | Holmberg               | 1555 Granville Lane       | NULL                 | Wayne                   | NJ                            | 7477                   | US                         | 973 517 9993     | 1974-12-21            | NULL                  | NULL          | coranova |
+|            15 | Meisie                | B                      | Alanis                 | 1950 Bingamon Branch Road | NULL                 | Wurtsboro               | NY                            | 12790                  | US                         | 845 888 1375     | 1976-05-14            | NULL                  | NULL          | coranova |
+|            16 | Jennifer              | H                      | Turner                 | 1907 Walton Street        | Apt 12               | Orem                    | UT                            | 84058                  | US                         | 801 431 8099     | 1953-07-16            | NULL                  | NULL          | NULL     |
+|            17 | Amarante              | P                      | Clement                | 1258 Boring Lane          | NULL                 | Dublin                  | CA                            | 94568                  | US                         | 415 720 2952     | 1988-08-01            | NULL                  | NULL          | coranova |
+|            18 | Shizuru               | T                      | Oota                   | 3633 Prudence Street      | NULL                 | Southfield              | Mi                            | 48235                  | US                         | 313 344 9647     | 1987-08-28            | NULL                  | NULL          | coranova |
+|            19 | Cong                  | L                      | Yu                     | 238 irish Lane            | NULL                 | Lancaster               | Wi                            | 53813                  | US                         | 608 723 4219     | 1952-11-27            | 2010-03-30            | NULL          | NULL     |
+|            20 | Marko                 | L                      | Probst                 | 2469 Late Avenue          | NULL                 | Durant                  | OK                            | 74701                  | US                         | 580 745 6377     | 1950-09-05            | NULL                  | NULL          | NULL     |
+|            21 | Toc                   | H                      | Ton                    | 1957 Martha Ellen Drive   | NULL                 | Reno                    | NE                            | 89503                  | US                         | 775 787 2854     | 1956-05-14            | NULL                  | NULL          | NULL     |
+|            22 | Waliy al Din          | Z                      | Kalb                   | 2853 Joes Road            | NULL                 | Plattsburgh             | NY                            | 12901                  | US                         | 518 817 5307     | 1946-11-28            | NULL                  | NULL          | NULL     |
+|            23 | Kazuhiro              | U                      | Oike                   | 4145 Romano Street        | NULL                 | Wakefield               | MA                            | 1880                   | US                         | 781 438 2337     | 1961-07-28            | NULL                  | NULL          | NULL     |
+|            24 | Sander                | S                      | Nygaard                | 585 Briercliff Road       | NULL                 | Brooklyn                | NY                            | 11206                  | US                         | 718 606 7820     | 1945-04-21            | NULL                  | NULL          | NULL     |
+|            25 | irena                 | F                      | Zykova                 | 921 Bungalow Road         | NULL                 | Omaha                   | NE                            | 68124                  | US                         | 402 938 5663     | 1986-09-29            | NULL                  | NULL          | coranova |
+|            26 | Dana                  | J                      | Zemanova               | 595 Thompson Street       | NULL                 | Los Angeles             | CA                            | 90017                  | US                         | 562 681 0868     | 1976-04-07            | NULL                  | NULL          | coranova |
+|            27 | Vera                  | i                      | Blazkova               | 1016 Stonecoal Road       | NULL                 | Clyde                   | OH                            | 43410                  | US                         | 419 547 9462     | 1966-04-14            | NULL                  | NULL          | coranova |
+|            28 | Chalten               | U                      | Galvan                 | 3603 Pinnickinnick Street | NULL                 | Freehold                | NJ                            | 7728                   | US                         | 732 780 6216     | 1952-02-06            | NULL                  | NULL          | NULL     |
+|            29 | Buthaynah             | W                      | Shammas                | 348 Mulberry Street       | NULL                 | Center                  | TX                            | 75935                  | US                         | 936 556 1088     | 1966-12-22            | NULL                  | NULL          | coranova |
+|            30 | Melusina              | C                      | Plante                 | 1902 Collins Avenue       | NULL                 | Columbus                | OH                            | 43213                  | US                         | 614 860 5981     | 1963-06-26            | NULL                  | NULL          | NULL     |
+|          3000 | Wilmer                | D                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-17            | NULL                  | NULL          | coranova |
+|          3001 | Fiona                 | T                      | Lund                   | 127 Nicholas Street       | NULL                 | Ottawa                  | KS                            | 66067                  | US                         | 785 242 7220     | 1979-08-24            | NULL                  | NULL          | coranova |
+|          3002 | Agaton                | J                      | Magnusson              | 185 Losh Lane             | NULL                 | Crafton                 | PA                            | 15205                  | US                         | 412 671 9110     | 1970-01-09            | NULL                  | NULL          | coranova |
+|          3003 | Douglas               | U                      | Magnusson              | 3412 Peck Court           | NULL                 | Fullerton               | CA                            | 93632                  | US                         | 949 463 0237     | 1970-07-25            | NULL                  | NULL          | coranova |
+|          3004 | Falah                 | L                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1981-08-25            | NULL                  | NULL          | coranova |
+|          3005 | Naila                 | Akilah                 | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 1988-05-25            | NULL                  | NULL          | coranova |
+|          3006 | Kaseeb                | H                      | Mansour                | 1041 Stonecoal Road       | NULL                 | Defiance                | OH                            | 43512                  | US                         | 419 570 2626     | 2000-05-25            | NULL                  | NULL          | coranova |
+|          3007 | Yehuda                | israel                 | Abramowitz             | 2179 Clarksburg Park Road | NULL                 | St Johns                | AZ                            | 85936                  | US                         | 928 337 7737     | 1956-04-24            | NULL                  | NULL          | NULL     |
+|          3008 | Veda                  | Reddy                  | Achaya                 | 1757 Progress Way         | NULL                 | Denver                  | iA                            | 50622                  | US                         | 319 984 8012     | 1993-05-03            | NULL                  | NULL          | coranova |
+|          3009 | Selah                 | Corinne                | Adams                  | 2894 Wilson Avenue        | NULL                 | Dallas                  | TX                            | 75248                  | US                         | 972 523 9938     | 1995-05-05            | NULL                  | NULL          | coranova |
+|          3010 | Jessica               | M                      | Martin                 | 4320 Charles Street       | NULL                 | Livonia                 | Mi                            | 48150                  | US                         | 734 422 0624     | 1971-06-06            | NULL                  | NULL          | coranova |
+|          3011 | Langston              | James                  | Martin                 | 4646 Ashwood Drive        | NULL                 | Whiting                 | iA                            | 51063                  | US                         | 712 455 4183     | 1972-06-08            | NULL                  | NULL          | coranova |
++---------------+-----------------------+------------------------+------------------------+---------------------------+----------------------+-------------------------+-------------------------------+------------------------+----------------------------+------------------+-----------------------+-----------------------+---------------+----------+
+42 rows in set (0.00 sec)
+
+
+
+
+3)
+
+mysql> create view CORA_VIEW as
+    -> select individual_given_name, individual_family_name, individual_birth_date from individual
+    -> where year(individual_birth_date) > 1965 and
+    -> individual.owner = substring_index(user(), '@', 1);
+Query OK, 0 rows affected (0.15 sec)
+
+
+
+4)
+
+mysql> grant select on cora_view to coranova;
+Query OK, 0 rows affected (0.02 sec)
+
+
+
+5)
+
+cd C:\Program Files\MySQL\MySQL Server 8.0\bin
+
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u coranova -p
+Enter password: ********
+
+mysql> use tarrytown_motel;
+Database changed
+
+mysql> show tables;
++---------------------------+
+| Tables_in_tarrytown_motel |
++---------------------------+
+| cora_view                 |
++---------------------------+
+1 row in set (0.01 sec)
+
+mysql> select * from cora_view;
++-----------------------+------------------------+-----------------------+
+| individual_given_name | individual_family_name | individual_birth_date |
++-----------------------+------------------------+-----------------------+
+| Cong                  | Yu                     | 1970-07-04            |
+| Yamila                | Concepcion             | 1968-05-05            |
+| Tobias                | Holtzmann              | 1981-09-27            |
+| Mavise                | Gagnon                 | 1983-08-26            |
+| Glen                  | Lavigne                | 1980-04-16            |
+| Filip                 | Krusina                | 1981-02-28            |
+| Yoshihide             | Ono                    | 1994-06-17            |
+| Ananias               | Sauceda                | 1974-11-15            |
+| Tim                   | Holmberg               | 1974-12-21            |
+| Meisie                | Alanis                 | 1976-05-14            |
+| Amarante              | Clement                | 1988-08-01            |
+| Shizuru               | Oota                   | 1987-08-28            |
+| irena                 | Zykova                 | 1986-09-29            |
+| Dana                  | Zemanova               | 1976-04-07            |
+| Vera                  | Blazkova               | 1966-04-14            |
+| Buthaynah             | Shammas                | 1966-12-22            |
+| Wilmer                | Lund                   | 1979-08-17            |
+| Fiona                 | Lund                   | 1979-08-24            |
+| Agaton                | Magnusson              | 1970-01-09            |
+| Douglas               | Magnusson              | 1970-07-25            |
+| Falah                 | Mansour                | 1981-08-25            |
+| Naila                 | Mansour                | 1988-05-25            |
+| Kaseeb                | Mansour                | 2000-05-25            |
+| Veda                  | Achaya                 | 1993-05-03            |
+| Selah                 | Adams                  | 1995-05-05            |
+| Jessica               | Martin                 | 1971-06-06            |
+| Langston              | Martin                 | 1972-06-08            |
++-----------------------+------------------------+-----------------------+
+27 rows in set (0.00 sec)

@@ -1,0 +1,517 @@
+A. Please solve the questions below. Include the number of each question with your solutions 
+(this will help you and me keep track of your work):
+
+1. Which manager supervises the most cafes? (5 points)
+
+2. If the zipcodes for the southern part of the galaxy start with 9, 
+how many cafes are in the southern part of the galaxy? (10 points)
+
+3. In which cafe were the most errors made? (10 points)
+
+----------------------------------------------------------------------------------------------------------------
+
+B. Help Obi-Wan Kenobi manage his cafes!
+
+1. Anakin Skywalker is retiring, and Obi-Wan Kenobi has to pick his successor. Write a stored procedure 
+that will update the cafes' management to the id of the new manager as soon as 
+Mr. Kenobi has chosen a successor for Anakin from the existing employees. (10 points) 
+
+2. Test the stored procedure and prove that it works. (10 points)
+
+----------------------------------------------------------------------------------------------------------------
+
+C. Help Rey Palpatine manage the employees in the southern cafes!
+
+
+Build a database user account (login, password, and permissions) for Rey. (10 points)
+
+1. Add an 'owner' column to the employee table and assign only the employees in the southern cafes to 
+her user account as the owner. This will take multiple steps. (10 points)
+
+2. Log in as Rey and demonstrate that she can see only the employees southern cafes' 
+information and nothing else in the database. (10 points)
+
+----------------------------------------------------------------------------------------------------------------
+
+EXTRA CREDIT:
+
+1. You have been hired in the city of Guilin! Add yourself to the employee table and 
+ensure that you assign the correct manager! (5 points)
+
+2. Find the employee who does not yet have an email address and update their record 
+with an email address that is built after the same pattern as the other ones in the database.
+
+
+
+++++++++++++++++++++ Answers ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+Installation: 
+
+mysql> source 'C:\Users\dawso\Desktop\Databases\blackcat.sql';
+ERROR:
+Failed to open file ''C:\Users\dawso\Desktop\Databases\blackcat.sql'', error: 22
+
+I have tried to solve this by removing and adding the ".sql" to my file name in the command line and in 
+my file explorer. 
+
+----------------------------------------------------------------------------------------------------------------
+
+A:
+
+1. 
+
+mysql> select count(cafe_id), manager_id from cafe_store
+    -> group by manager_id;
++----------------+------------+
+| count(cafe_id) | manager_id |
++----------------+------------+
+|              1 |          2 |
+|              1 |          8 |
+|              3 |         14 |
+|              1 |         18 |
+|              3 |         21 |
++----------------+------------+
+5 rows in set (0.00 sec)
+
+mysql> select employee_id, employee_first_name from employee
+    -> where employee_id = 14 or
+    -> employee_id = 21;
++-------------+---------------------+
+| employee_id | employee_first_name |
++-------------+---------------------+
+|          14 | Shmi                |
+|          21 | Anakin              |
++-------------+---------------------+
+2 rows in set (0.00 sec)
+
+Both Shmi and Anakin supervise the most cafes.
+
+
+2.
+
+mysql> select count(cafe_id) as "Cafes in Southern Galaxy" from cafe_store
+    -> where cafe_zip like "9%";
++---------------------------+
+| Cafes in Southern Galaxy  |
++---------------------------+
+|                         3 |
++---------------------------+
+1 row in set (0.00 sec)
+
+3 cafes
+
+
+3.
+
+mysql> select count(complaint) as "Errors", cafe_id from orders
+    -> group by cafe_id;
++--------+---------+
+| Errors | cafe_id |
++--------+---------+
+|     12 |       1 |
++--------+---------+
+1 row in set (0.00 sec)
+
+mysql> select cafe_street, cafe_city from cafe_store
+    -> where cafe_id = 1;
++-----------------+-----------+
+| cafe_street     | cafe_city |
++-----------------+-----------+
+| 123 Main Street | Coruscant |
++-----------------+-----------+
+1 row in set (0.00 sec)
+
+The most errors (complaints) were made in the cafe with the cafe_id of 1 which is at 123 Main Street in Coruscant.
+
+----------------------------------------------------------------------------------------------------------------
+
+B:
+
+1.
+
+mysql> select employee_first_name from  employee
+    -> where employee_id = 21;
++---------------------+
+| employee_first_name |
++---------------------+
+| Anakin              |
++---------------------+
+1 row in set (0.00 sec)
+
+mysql> delimiter //
+mysql> create procedure anakinSuccessor(EmpID int)
+    -> begin
+    -> update cafe_store
+    -> set manager_id = EmpID
+    -> where manager_id = 21;
+    -> end//
+Query OK, 0 rows affected (0.03 sec)
+
+
+2.
+
+mysql> select * from cafe_store;
++---------+---------------------+---------------+----------+------------+
+| cafe_id | cafe_street         | cafe_city     | cafe_zip | manager_id |
++---------+---------------------+---------------+----------+------------+
+|       1 | 123 Main Street     | Coruscant     |    91172 |         14 |
+|       2 | 234 Galactic Avenue | Galactic City |    76341 |          2 |
+|       3 | 345 Cloud Lane      | Mos Eisley    |    45335 |          8 |
+|       4 | 454 Rainbow Ave     | Cloud City    |    86121 |         14 |
+|       5 | 567 Jedi Way        | Matmata       |    12278 |         18 |
+|       7 | 789 Mecury Blvd     | Ksar Hadaka   |    98765 |         21 |
+|       8 | 891 Corona Drive    | Tataouine     |    56643 |         21 |
+|       9 | 987 Kenobi Pkwy     | Guilin        |    33445 |         14 |
+|      10 | 543 Organa Blvd     | Medinin       |    90546 |         21 |
++---------+---------------------+---------------+----------+------------+
+9 rows in set (0.00 sec)
+
+mysql> call anakinSuccessor(5);
+Query OK, 3 rows affected (0.01 sec)
+
+mysql> select * from cafe_store;
++---------+---------------------+---------------+----------+------------+
+| cafe_id | cafe_street         | cafe_city     | cafe_zip | manager_id |
++---------+---------------------+---------------+----------+------------+
+|       1 | 123 Main Street     | Coruscant     |    91172 |         14 |
+|       2 | 234 Galactic Avenue | Galactic City |    76341 |          2 |
+|       3 | 345 Cloud Lane      | Mos Eisley    |    45335 |          8 |
+|       4 | 454 Rainbow Ave     | Cloud City    |    86121 |         14 |
+|       5 | 567 Jedi Way        | Matmata       |    12278 |         18 |
+|       7 | 789 Mecury Blvd     | Ksar Hadaka   |    98765 |          5 |
+|       8 | 891 Corona Drive    | Tataouine     |    56643 |          5 |
+|       9 | 987 Kenobi Pkwy     | Guilin        |    33445 |         14 |
+|      10 | 543 Organa Blvd     | Medinin       |    90546 |          5 |
++---------+---------------------+---------------+----------+------------+
+9 rows in set (0.00 sec)
+
+----------------------------------------------------------------------------------------------------------------
+
+C:
+
+1.
+
+mysql> create user Rey identified by 'Rey';
+Query OK, 0 rows affected (0.02 sec)
+
+2.
+
+mysql> alter table employee
+    -> add column owner varchar(30);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> select * from employee;
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email            | owner |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe      | NULL  |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe       | NULL  |
+|           3 | Jyn                 | Erso               |              18 |       8 | erso2@blackcat.cafe       | NULL  |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe       | NULL  |
+|           5 | Boba                | Fett               |              14 |       5 | fett@blackcat.cafe        | NULL  |
+|           6 | Jango               | Fett               |               2 |       2 | fett2@blackcat.cafe       | NULL  |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe   | NULL  |
+|           8 | Rey                 | Palpatine          |               1 |       2 | palpatine2@blackcat.cafe  | NULL  |
+|           9 | Dinee               | Ellberger          |               8 |       6 | ellberger@blackcat.cafe   | NULL  |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe       | NULL  |
+|          11 | Gregar              | Typho              |               8 |       6 | typho@blackcat.cafe       | NULL  |
+|          12 | Mon                 | Mothma             |               2 |       2 | mothma@blackcat.cafe      | NULL  |
+|          13 | Biggs               | Darklighter        |               8 |       4 | darklighter@blackcat.cafe | NULL  |
+|          14 | Shmi                | Skywalker          |               1 |       2 | skywalker@blackcat.cafe   | NULL  |
+|          15 | Jobal               | Naberrie           |              18 |       8 | naberrie@blackcat.cafe    | NULL  |
+|          16 | Beru                | Lars               |               8 |       4 | lars2@blackcat.cafe       | NULL  |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe        | NULL  |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | NULL                      | NULL  |
+|          19 | Darth               | Sidious            |              14 |       5 | sidious@blackcat.cafe     | NULL  |
+|          20 | Finn                | FN-2187            |               8 |       3 | fn@blackcat.cafe          | NULL  |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe   | NULL  |
+|          22 | Paige               | Tico               |              21 |       9 | tico@blackcat.cafe        | NULL  |
+|          23 | Cad                 | Bane               |              18 |       8 | bane@blackcat.cafe        | NULL  |
+|          24 | Count               | Dooku              |              14 |       5 | dooku@blackcat.cafe       | NULL  |
+|          26 | Rose                | Tico               |              14 |       5 | skywalker@blackcat.cafe   | NULL  |
+|          27 | Andy                | Snoke              |              18 |       8 |                           | NULL  |
+|          28 | Maximilian          | Veers              |              21 |       9 | veers@blackcat.cafe       | NULL  |
+|          29 | Benjamin            | Solo               |              14 |       5 | solo@blackcat.cafe        | NULL  |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe    | NULL  |
+|          31 | Cere                | Junda              |               8 |       3 | junda@blackcat.cafe       | NULL  |
+|          32 | Sonja               | Streuber           |              21 |       9 | streuber@blackcat.cafe    | NULL  |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+31 rows in set (0.00 sec)
+
+
+mysql> create view southern_workers as
+    -> select employee.employee_id, employee.employee_first_name, cafe_store.cafe_zip, cafe_store.cafe_id
+    -> from cafe_store, employee
+    -> where cafe_store.cafe_id = employee.cafe_id and
+    -> cafe_store.cafe_zip like "9%";
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from southern_workers;
++-------------+---------------------+----------+---------+
+| employee_id | employee_first_name | cafe_zip | cafe_id |
++-------------+---------------------+----------+---------+
+|           1 | Obi Wan             |    91172 |       1 |
+|           2 | Galen               |    98765 |       7 |
+|           4 | Lyra                |    90546 |      10 |
+|           7 | Sheev               |    90546 |      10 |
+|          10 | Gavyn               |    98765 |       7 |
+|          17 | Cliegg              |    98765 |       7 |
+|          18 | Qui-Gong            |    91172 |       1 |
+|          21 | Anakin              |    91172 |       1 |
+|          30 | Padme               |    90546 |      10 |
++-------------+---------------------+----------+---------+
+9 rows in set (0.00 sec)
+
+mysql> update employee
+    -> set owner = "Rey"
+    -> where cafe_id = 1 or
+    -> cafe_id = 7 or
+    -> cafe_id = 10;
+Query OK, 9 rows affected (0.00 sec)
+Rows matched: 9  Changed: 9  Warnings: 0
+
+mysql> select * from employee;
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email            | owner |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe      | Rey   |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe       | Rey   |
+|           3 | Jyn                 | Erso               |              18 |       8 | erso2@blackcat.cafe       | NULL  |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe       | Rey   |
+|           5 | Boba                | Fett               |              14 |       5 | fett@blackcat.cafe        | NULL  |
+|           6 | Jango               | Fett               |               2 |       2 | fett2@blackcat.cafe       | NULL  |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe   | Rey   |
+|           8 | Rey                 | Palpatine          |               1 |       2 | palpatine2@blackcat.cafe  | NULL  |
+|           9 | Dinee               | Ellberger          |               8 |       6 | ellberger@blackcat.cafe   | NULL  |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe       | Rey   |
+|          11 | Gregar              | Typho              |               8 |       6 | typho@blackcat.cafe       | NULL  |
+|          12 | Mon                 | Mothma             |               2 |       2 | mothma@blackcat.cafe      | NULL  |
+|          13 | Biggs               | Darklighter        |               8 |       4 | darklighter@blackcat.cafe | NULL  |
+|          14 | Shmi                | Skywalker          |               1 |       2 | skywalker@blackcat.cafe   | NULL  |
+|          15 | Jobal               | Naberrie           |              18 |       8 | naberrie@blackcat.cafe    | NULL  |
+|          16 | Beru                | Lars               |               8 |       4 | lars2@blackcat.cafe       | NULL  |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe        | Rey   |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | NULL                      | Rey   |
+|          19 | Darth               | Sidious            |              14 |       5 | sidious@blackcat.cafe     | NULL  |
+|          20 | Finn                | FN-2187            |               8 |       3 | fn@blackcat.cafe          | NULL  |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe   | Rey   |
+|          22 | Paige               | Tico               |              21 |       9 | tico@blackcat.cafe        | NULL  |
+|          23 | Cad                 | Bane               |              18 |       8 | bane@blackcat.cafe        | NULL  |
+|          24 | Count               | Dooku              |              14 |       5 | dooku@blackcat.cafe       | NULL  |
+|          26 | Rose                | Tico               |              14 |       5 | skywalker@blackcat.cafe   | NULL  |
+|          27 | Andy                | Snoke              |              18 |       8 |                           | NULL  |
+|          28 | Maximilian          | Veers              |              21 |       9 | veers@blackcat.cafe       | NULL  |
+|          29 | Benjamin            | Solo               |              14 |       5 | solo@blackcat.cafe        | NULL  |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe    | Rey   |
+|          31 | Cere                | Junda              |               8 |       3 | junda@blackcat.cafe       | NULL  |
+|          32 | Sonja               | Streuber           |              21 |       9 | streuber@blackcat.cafe    | NULL  |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+31 rows in set (0.00 sec)
+
+as you can see, all of the southern galaxy employees have the owner of Rey. 
+
+mysql> create view rey_view as
+    -> select * from employee
+    -> where employee.owner = substring_index(user(), '@', 1);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> grant select on rey_view to Rey;
+Query OK, 0 rows affected (0.01 sec)
+
+This last permission will allow rey to only select the view, but I could not assign it 
+until after I created the view.
+
+
+2.
+
+cd C:\Program Files\MySQL\MySQL Server 8.0\bin
+
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u Rey -p
+Enter password: ***
+
+mysql> use blackcat_cafe;
+Database changed
+mysql> show tables;
++-------------------------+
+| Tables_in_blackcat_cafe |
++-------------------------+
+| rey_view                |
++-------------------------+
+1 row in set (0.00 sec)
+
+mysql> select * from rey_view;
++-------------+---------------------+--------------------+-----------------+---------+-------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email          | owner |
++-------------+---------------------+--------------------+-----------------+---------+-------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe    | Rey   |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe     | Rey   |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe     | Rey   |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe | Rey   |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe     | Rey   |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe      | Rey   |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | NULL                    | Rey   |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe | Rey   |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe  | Rey   |
++-------------+---------------------+--------------------+-----------------+---------+-------------------------+-------+
+9 rows in set (0.00 sec)
+
+----------------------------------------------------------------------------------------------------------------
+
+EXTRA CREDIT:
+
+1.
+
+mysql> select * from cafe_store
+    -> where cafe_city = "Guilin";
++---------+-----------------+-----------+----------+------------+
+| cafe_id | cafe_street     | cafe_city | cafe_zip | manager_id |
++---------+-----------------+-----------+----------+------------+
+|       9 | 987 Kenobi Pkwy | Guilin    |    33445 |         14 |
++---------+-----------------+-----------+----------+------------+
+1 row in set (0.00 sec)
+
+mysql> insert into employee
+    -> (employee_id, employee_first_name, employee_last_name, employee_id_mgr, cafe_id, employee_email)
+    -> values (33, 'Dawson', 'Demien', 21, 9, 'demien@blackcat.cafe');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from employee;
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email            | owner |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe      | Rey   |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe       | Rey   |
+|           3 | Jyn                 | Erso               |              18 |       8 | erso2@blackcat.cafe       | NULL  |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe       | Rey   |
+|           5 | Boba                | Fett               |              14 |       5 | fett@blackcat.cafe        | NULL  |
+|           6 | Jango               | Fett               |               2 |       2 | fett2@blackcat.cafe       | NULL  |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe   | Rey   |
+|           8 | Rey                 | Palpatine          |               1 |       2 | palpatine2@blackcat.cafe  | NULL  |
+|           9 | Dinee               | Ellberger          |               8 |       6 | ellberger@blackcat.cafe   | NULL  |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe       | Rey   |
+|          11 | Gregar              | Typho              |               8 |       6 | typho@blackcat.cafe       | NULL  |
+|          12 | Mon                 | Mothma             |               2 |       2 | mothma@blackcat.cafe      | NULL  |
+|          13 | Biggs               | Darklighter        |               8 |       4 | darklighter@blackcat.cafe | NULL  |
+|          14 | Shmi                | Skywalker          |               1 |       2 | skywalker@blackcat.cafe   | NULL  |
+|          15 | Jobal               | Naberrie           |              18 |       8 | naberrie@blackcat.cafe    | NULL  |
+|          16 | Beru                | Lars               |               8 |       4 | lars2@blackcat.cafe       | NULL  |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe        | Rey   |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | NULL                      | Rey   |
+|          19 | Darth               | Sidious            |              14 |       5 | sidious@blackcat.cafe     | NULL  |
+|          20 | Finn                | FN-2187            |               8 |       3 | fn@blackcat.cafe          | NULL  |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe   | Rey   |
+|          22 | Paige               | Tico               |              21 |       9 | tico@blackcat.cafe        | NULL  |
+|          23 | Cad                 | Bane               |              18 |       8 | bane@blackcat.cafe        | NULL  |
+|          24 | Count               | Dooku              |              14 |       5 | dooku@blackcat.cafe       | NULL  |
+|          26 | Rose                | Tico               |              14 |       5 | skywalker@blackcat.cafe   | NULL  |
+|          27 | Andy                | Snoke              |              18 |       8 |                           | NULL  |
+|          28 | Maximilian          | Veers              |              21 |       9 | veers@blackcat.cafe       | NULL  |
+|          29 | Benjamin            | Solo               |              14 |       5 | solo@blackcat.cafe        | NULL  |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe    | Rey   |
+|          31 | Cere                | Junda              |               8 |       3 | junda@blackcat.cafe       | NULL  |
+|          32 | Sonja               | Streuber           |              21 |       9 | streuber@blackcat.cafe    | NULL  |
+|          33 | Dawson              | Demien             |              21 |       9 | demien@blackcat.cafe      | NULL  |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+32 rows in set (0.00 sec)
+
+I made my manager_id = 21 because in the employee table everyone that works at the cafe on Guilin Street 
+has the manager_id = 21 but I am also confused because the manager_id for that cafe on Guilin street 
+is 14.
+
+
+2.
+
+mysql> update employee
+    -> set employee_email = 'jinn@blackcat.cafe'
+    -> where employee_id = 18;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from employee;
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email            | owner |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe      | Rey   |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe       | Rey   |
+|           3 | Jyn                 | Erso               |              18 |       8 | erso2@blackcat.cafe       | NULL  |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe       | Rey   |
+|           5 | Boba                | Fett               |              14 |       5 | fett@blackcat.cafe        | NULL  |
+|           6 | Jango               | Fett               |               2 |       2 | fett2@blackcat.cafe       | NULL  |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe   | Rey   |
+|           8 | Rey                 | Palpatine          |               1 |       2 | palpatine2@blackcat.cafe  | NULL  |
+|           9 | Dinee               | Ellberger          |               8 |       6 | ellberger@blackcat.cafe   | NULL  |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe       | Rey   |
+|          11 | Gregar              | Typho              |               8 |       6 | typho@blackcat.cafe       | NULL  |
+|          12 | Mon                 | Mothma             |               2 |       2 | mothma@blackcat.cafe      | NULL  |
+|          13 | Biggs               | Darklighter        |               8 |       4 | darklighter@blackcat.cafe | NULL  |
+|          14 | Shmi                | Skywalker          |               1 |       2 | skywalker@blackcat.cafe   | NULL  |
+|          15 | Jobal               | Naberrie           |              18 |       8 | naberrie@blackcat.cafe    | NULL  |
+|          16 | Beru                | Lars               |               8 |       4 | lars2@blackcat.cafe       | NULL  |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe        | Rey   |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | jinn@blackcat.cafe        | Rey   |
+|          19 | Darth               | Sidious            |              14 |       5 | sidious@blackcat.cafe     | NULL  |
+|          20 | Finn                | FN-2187            |               8 |       3 | fn@blackcat.cafe          | NULL  |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe   | Rey   |
+|          22 | Paige               | Tico               |              21 |       9 | tico@blackcat.cafe        | NULL  |
+|          23 | Cad                 | Bane               |              18 |       8 | bane@blackcat.cafe        | NULL  |
+|          24 | Count               | Dooku              |              14 |       5 | dooku@blackcat.cafe       | NULL  |
+|          26 | Rose                | Tico               |              14 |       5 | skywalker@blackcat.cafe   | NULL  |
+|          27 | Andy                | Snoke              |              18 |       8 |                           | NULL  |
+|          28 | Maximilian          | Veers              |              21 |       9 | veers@blackcat.cafe       | NULL  |
+|          29 | Benjamin            | Solo               |              14 |       5 | solo@blackcat.cafe        | NULL  |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe    | Rey   |
+|          31 | Cere                | Junda              |               8 |       3 | junda@blackcat.cafe       | NULL  |
+|          32 | Sonja               | Streuber           |              21 |       9 | streuber@blackcat.cafe    | NULL  |
+|          33 | Dawson              | Demien             |              14 |       9 | demien@blackcat.cafe      | NULL  |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+32 rows in set (0.00 sec)
+
+mysql> update employee
+    -> set employee_email = 'snoke@blackcat.cafe'
+    -> where employee_id = 27;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from employee;
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+| employee_id | employee_first_name | employee_last_name | employee_id_mgr | cafe_id | employee_email            | owner |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+|           1 | Obi Wan             | Kenobi             |               1 |       1 | kenobi@blackcat.cafe      | Rey   |
+|           2 | Galen               | Erso               |              14 |       7 | erso3@blackcat.cafe       | Rey   |
+|           3 | Jyn                 | Erso               |              18 |       8 | erso2@blackcat.cafe       | NULL  |
+|           4 | Lyra                | Erso               |              25 |      10 | erso1@blackcat.cafe       | Rey   |
+|           5 | Boba                | Fett               |              14 |       5 | fett@blackcat.cafe        | NULL  |
+|           6 | Jango               | Fett               |               2 |       2 | fett2@blackcat.cafe       | NULL  |
+|           7 | Sheev               | Palpatine          |              21 |      10 | palpatine@blackcat.cafe   | Rey   |
+|           8 | Rey                 | Palpatine          |               1 |       2 | palpatine2@blackcat.cafe  | NULL  |
+|           9 | Dinee               | Ellberger          |               8 |       6 | ellberger@blackcat.cafe   | NULL  |
+|          10 | Gavyn               | Sykes              |              14 |       7 | sykes@blackcat.cafe       | Rey   |
+|          11 | Gregar              | Typho              |               8 |       6 | typho@blackcat.cafe       | NULL  |
+|          12 | Mon                 | Mothma             |               2 |       2 | mothma@blackcat.cafe      | NULL  |
+|          13 | Biggs               | Darklighter        |               8 |       4 | darklighter@blackcat.cafe | NULL  |
+|          14 | Shmi                | Skywalker          |               1 |       2 | skywalker@blackcat.cafe   | NULL  |
+|          15 | Jobal               | Naberrie           |              18 |       8 | naberrie@blackcat.cafe    | NULL  |
+|          16 | Beru                | Lars               |               8 |       4 | lars2@blackcat.cafe       | NULL  |
+|          17 | Cliegg              | Lars               |              14 |       7 | lars@blackcat.cafe        | Rey   |
+|          18 | Qui-Gong            | Jinn               |               1 |       1 | jinn@blackcat.cafe        | Rey   |
+|          19 | Darth               | Sidious            |              14 |       5 | sidious@blackcat.cafe     | NULL  |
+|          20 | Finn                | FN-2187            |               8 |       3 | fn@blackcat.cafe          | NULL  |
+|          21 | Anakin              | Skywalker          |               1 |       1 | skywalker@blackcat.cafe   | Rey   |
+|          22 | Paige               | Tico               |              21 |       9 | tico@blackcat.cafe        | NULL  |
+|          23 | Cad                 | Bane               |              18 |       8 | bane@blackcat.cafe        | NULL  |
+|          24 | Count               | Dooku              |              14 |       5 | dooku@blackcat.cafe       | NULL  |
+|          26 | Rose                | Tico               |              14 |       5 | skywalker@blackcat.cafe   | NULL  |
+|          27 | Andy                | Snoke              |              18 |       8 | snoke@blackcat.cafe       | NULL  |
+|          28 | Maximilian          | Veers              |              21 |       9 | veers@blackcat.cafe       | NULL  |
+|          29 | Benjamin            | Solo               |              14 |       5 | solo@blackcat.cafe        | NULL  |
+|          30 | Padme               | Amidala            |              25 |      10 | admidala@blackcat.cafe    | Rey   |
+|          31 | Cere                | Junda              |               8 |       3 | junda@blackcat.cafe       | NULL  |
+|          32 | Sonja               | Streuber           |              21 |       9 | streuber@blackcat.cafe    | NULL  |
+|          33 | Dawson              | Demien             |              14 |       9 | demien@blackcat.cafe      | NULL  |
++-------------+---------------------+--------------------+-----------------+---------+---------------------------+-------+
+32 rows in set (0.00 sec)
+
+I did it both for Snoke and Jinn, because in jinn's row it said NULL and in snoke's row it was just straight up
+missing, and I didnt know which one truly had their email missing so to be safe I did it for both of them. 

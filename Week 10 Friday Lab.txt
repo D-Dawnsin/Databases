@@ -1,0 +1,220 @@
+mysql> alter table employee
+    -> add column EMPLOYEE_NAME varchar(15) not null;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column EMAIL varchar(30) not null;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column DATABASE_MANAGEMENT boolean not null;
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column WEB_DESIGN boolean not null;
+Query OK, 0 rows affected (0.40 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column PROGRAMMING boolean not null;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table employee
+    -> add column PROJECT_MANAGEMENT boolean not null;
+Query OK, 0 rows affected (0.10 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table TASKS(
+    -> TASK_ID int not null,
+    -> TASK_NAME varchar(15) not null,
+    -> ESTIMATED_COMPLETION_TIME timestamp not null,
+    -> ACTUAL_COMPLETION_TIME timestamp,
+    -> INDIVIDUAL_ID int not null,
+    -> PROJECT_ID int not null,
+    -> DATABASE_MANAGMENT boolean not null,
+    -> WEB_DESIGN boolean not null,
+    -> PROGRAMMING boolean not null,
+    -> PROJECT_MANAGEMENT boolean not null,
+    -> primary key (TASK_ID),
+    -> foreign key (INDIVIDUAL_ID) references employee(individual_id)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> create table PROJECT(
+    -> PROJECT_ID int not null,
+    -> SUB_ID int not null,
+    -> INDIVIDUAL_ID int not null,
+    -> PROJECT_NAME varchar(30) not null,
+    -> ESTIMATED_COST varchar(15) not null,
+    -> ESTIMATED_HOURS varchar(10) not null,
+    -> AGREED_TO_BILLABLE_HOURLY_RATE varchar(15),
+    -> PROJECT_DESCRIPTION varchar(200),
+    -> primary key (PROJECT_ID),
+    -> foreign key (INDIVIDUAL_ID) references employee(individual_id)
+    -> );
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> alter table tasks
+    -> add foreign key (project_id) references project(project_id);
+Query OK, 0 rows affected (0.12 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table SUBSIDARIES(
+    -> SUB_ID int not null,
+    -> NAME varchar(15) not null,
+    -> ADDRESS varchar(30) not null,
+    -> PHONE varchar(15) not null,
+    -> CONTACT_NAME varchar(20) not null,
+    -> primary key (SUB_ID)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> alter table project
+    -> add foreign key(sub_id) references subsidaries(sub_id);
+Query OK, 0 rows affected (0.12 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+----------------------------------------------------------------------------------------------------------
+
+
+
+
+mysql> desc employee;
++--------------------------+--------------+------+-----+---------+-------+
+| Field                    | Type         | Null | Key | Default | Extra |
++--------------------------+--------------+------+-----+---------+-------+
+| INDIVIDUAL_ID            | int          | NO   | PRI | NULL    |       |
+| SUPERVISOR_INDIVIDUAL_ID | int          | YES  | MUL | NULL    |       |
+| EMPLOYEE_TAX_ID          | varchar(15)  | NO   |     | NULL    |       |
+| EMPLOYEE_JOB_CATEGORY    | char(1)      | NO   |     | NULL    |       |
+| EMPLOYEE_HOURLY_RATE     | decimal(5,2) | NO   |     | NULL    |       |
+| HIRE_DATE                | date         | NO   |     | NULL    |       |
+| TERMINATION_DATE         | date         | YES  |     | NULL    |       |
+| EMERGENCY_CONTACT_NAME   | tinytext     | YES  |     | NULL    |       |
+| EMERGENCY_CONTACT_NUMBER | tinytext     | YES  |     | NULL    |       |
+| EMPLOYEE_NAME            | varchar(15)  | NO   |     | NULL    |       |
+| EMAIL                    | varchar(30)  | NO   |     | NULL    |       |
+| DATABASE_MANAGEMENT      | tinyint(1)   | NO   |     | NULL    |       |
+| WEB_DESIGN               | tinyint(1)   | NO   |     | NULL    |       |
+| PROGRAMMING              | tinyint(1)   | NO   |     | NULL    |       |
+| PROJECT_MANAGEMENT       | tinyint(1)   | NO   |     | NULL    |       |
++--------------------------+--------------+------+-----+---------+-------+
+15 rows in set (0.01 sec)
+
+mysql> desc tasks;
++---------------------------+-------------+------+-----+---------+-------+
+| Field                     | Type        | Null | Key | Default | Extra |
++---------------------------+-------------+------+-----+---------+-------+
+| TASK_ID                   | int         | NO   | PRI | NULL    |       |
+| TASK_NAME                 | varchar(15) | NO   |     | NULL    |       |
+| ESTIMATED_COMPLETION_TIME | timestamp   | NO   |     | NULL    |       |
+| ACTUAL_COMPLETION_TIME    | timestamp   | YES  |     | NULL    |       |
+| INDIVIDUAL_ID             | int         | NO   | MUL | NULL    |       |
+| PROJECT_ID                | int         | NO   | MUL | NULL    |       |
+| DATABASE_MANAGEMENT       | tinyint(1)  | NO   |     | NULL    |       |
+| WEB_DESIGN                | tinyint(1)  | NO   |     | NULL    |       |
+| PROGRAMMING               | tinyint(1)  | NO   |     | NULL    |       |
+| PROKECT_MANAGMENT         | tinyint(1)  | NO   |     | NULL    |       |
++---------------------------+-------------+------+-----+---------+-------+
+10 rows in set (0.00 sec)
+
+mysql> desc project;
++--------------------------------+--------------+------+-----+---------+-------+
+| Field                          | Type         | Null | Key | Default | Extra |
++--------------------------------+--------------+------+-----+---------+-------+
+| PROJECT_ID                     | int          | NO   | PRI | NULL    |       |
+| SUB_ID                         | int          | NO   | MUL | NULL    |       |
+| INDIVIDUAL_ID                  | int          | NO   | MUL | NULL    |       |
+| PROJECT_NAME                   | varchar(30)  | NO   |     | NULL    |       |
+| ESTIMATED_COST                 | varchar(15)  | NO   |     | NULL    |       |
+| ESTIMATED_HOURS                | varchar(10)  | NO   |     | NULL    |       |
+| AGREED_TO_BILLABLE_HOURLY_RATE | varchar(15)  | YES  |     | NULL    |       |
+| PROJECT_DESCRIPTION            | varchar(200) | YES  |     | NULL    |       |
++--------------------------------+--------------+------+-----+---------+-------+
+8 rows in set (0.00 sec)
+
+mysql> desc subsidaries;
++---------------+-------------+------+-----+---------+-------+
+| Field         | Type        | Null | Key | Default | Extra |
++---------------+-------------+------+-----+---------+-------+
+| SUB_ID        | int         | NO   | PRI | NULL    |       |
+| NAME          | varchar(15) | NO   |     | NULL    |       |
+| ADDRESS       | varchar(30) | NO   |     | NULL    |       |
+| PHONE         | varchar(15) | NO   |     | NULL    |       |
+| CONTACT_NAME  | varchar(20) | NO   |     | NULL    |       |
++---------------+-------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+
+
+
+----------------------------------------------------------------------------------------------------------
+
+
+mysql> insert into employee
+    -> values (9, 3000, '000-33-6589', 'C', 9.00, '2015-01-01', NULL, 'Keegan Demien', '(xxx)xxx-xxxx', 'Filip', 'filip@gmail.com', True, False, True, False);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from employee;
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+---------------+-----------------+---------------------+------------+-------------+--------------------+
+| INDIVIDUAL_ID | SUPERVISOR_INDIVIDUAL_ID | EMPLOYEE_TAX_ID | EMPLOYEE_JOB_CATEGORY | EMPLOYEE_HOURLY_RATE | HIRE_DATE  | TERMINATION_DATE | EMERGENCY_CONTACT_NAME | EMERGENCY_CONTACT_NUMBER | EMPLOYEE_NAME | EMAIL           | DATABASE_MANAGEMENT | WEB_DESIGN | PROGRAMMING | PROJECT_MANAGEMENT |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+---------------+-----------------+---------------------+------------+-------------+--------------------+
+|             1 |                     NULL | 000-01-1234     | M                     |                50.00 | 2013-01-01 | NULL             | Darth Vader            | (312)555-1212            |               |                 |                   0 |          0 |           0 |                  0 |
+|             2 |                        1 | 000-02-8564     | C                     |                 9.75 | 2013-01-01 | 2013-06-01       | Kylo Ren               | (415)778-9584            |               |                 |                   0 |          0 |           0 |                  0 |
+|             4 |                     3000 | 000-45-3456     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |               |                 |                   0 |          0 |           0 |                  0 |
+|             9 |                     3000 | 000-33-6589     | C                     |                 9.00 | 2015-01-01 | NULL             | Keegan Demien          | (xxx)xxx-xxxx            | Filip         | filip@gmail.com |                   1 |          0 |           1 |                  0 |
+|            10 |                        1 | 000-57-8385     | C                     |                 9.75 | 2013-03-01 | NULL             | Dawson Demien          | (219)464-5000            |               |                 |                   0 |          0 |           0 |                  0 |
+|            15 |                     3000 | 000-78-9876     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |               |                 |                   0 |          0 |           0 |                  0 |
+|          3000 |                        1 | 000-43-1234     | M                     |                50.00 | 2013-01-01 | NULL             | NULL                   | NULL                     |               |                 |                   0 |          0 |           0 |                  0 |
+|          3001 |                     3000 | 000-45-5678     | C                     |                12.00 | 2014-01-01 | NULL             | NULL                   | NULL                     |               |                 |                   0 |          0 |           0 |                  0 |
++---------------+--------------------------+-----------------+-----------------------+----------------------+------------+------------------+------------------------+--------------------------+---------------+-----------------+---------------------+------------+-------------+--------------------+
+8 rows in set (0.00 sec)
+
+
+
+mysql> insert into subsidaries
+    -> values (1, 'Monster Inc.', '1654 Pixar Dr.', '(xxx)xxx-xxxx', 'Sully Boo');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from subsidaries;
++--------+--------------+----------------+---------------+--------------+
+| SUB_ID | NAME         | ADDRESS        | PHONE         | CONTACT_NAME |
++--------+--------------+----------------+---------------+--------------+
+|      1 | Monster Inc. | 1654 Pixar Dr. | (xxx)xxx-xxxx | Sully Boo    |
++--------+--------------+----------------+---------------+--------------+
+1 row in set (0.00 sec)
+
+
+
+mysql> insert into project
+    -> values (1, 1, 9, 'Scream Door', '750.00', '50 hours', '26.50', 'Will take different doors and see how much scream each one can get and record that information');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from project;
++------------+--------+---------------+--------------+----------------+-----------------+--------------------------------+------------------------------------------------------------------------------------------------+
+| PROJECT_ID | SUB_ID | INDIVIDUAL_ID | PROJECT_NAME | ESTIMATED_COST | ESTIMATED_HOURS | AGREED_TO_BILLABLE_HOURLY_RATE | PROJECT_DESCRIPTION                                                                            |
++------------+--------+---------------+--------------+----------------+-----------------+--------------------------------+------------------------------------------------------------------------------------------------+
+|          1 |      1 |             9 | Scream Door  | 750.00         | 50 hours        | 26.50                          | Will take different doors and see how much scream each one can get and record that information |
++------------+--------+---------------+--------------+----------------+-----------------+--------------------------------+------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+
+
+mysql> insert into tasks
+    -> values (1, 'Modeling', '2020-01-01 13:00:00', NULL, 9, 1, True, False, False, False);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from tasks;
++---------+-----------+---------------------------+------------------------+---------------+------------+---------------------+------------+-------------+-------------------+
+| TASK_ID | TASK_NAME | ESTIMATED_COMPLETION_TIME | ACTUAL_COMPLETION_TIME | INDIVIDUAL_ID | PROJECT_ID | DATABASE_MANAGEMENT | WEB_DESIGN | PROGRAMMING | PROKECT_MANAGMENT |
++---------+-----------+---------------------------+------------------------+---------------+------------+---------------------+------------+-------------+-------------------+
+|       1 | Modeling  | 2020-01-01 13:00:00       | NULL                   |             9 |          1 |                   1 |          0 |           0 |                 0 |
++---------+-----------+---------------------------+------------------------+---------------+------------+---------------------+------------+-------------+-------------------+
+1 row in set (0.00 sec)
+
+
+
